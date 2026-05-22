@@ -148,3 +148,92 @@
 .auth-link:hover {
   text-decoration: underline;
 }
+
+/* ── Email confirmation screen ─────────────────────────────── */
+.confirm-card {
+  text-align: center;
+}
+
+.confirm-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.confirm-icon-ring {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.12);
+  border: 2px solid rgba(139, 92, 246, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: confirm-pulse 2.4s ease-in-out infinite;
+  box-shadow: 0 0 32px rgba(139, 92, 246, 0.2);
+}
+
+@keyframes confirm-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0.3), 0 0 32px rgba(139,92,246,0.15); }
+  50%       { box-shadow: 0 0 0 10px rgba(139,92,246,0), 0 0 48px rgba(139,92,246,0.25); }
+}
+
+.confirm-icon {
+  width: 36px;
+  height: 36px;
+  color: var(--accent-primary);
+  animation: confirm-float 3s ease-in-out infinite;
+}
+
+@keyframes confirm-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+.confirm-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+
+.confirm-body {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.confirm-email {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.confirm-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  opacity: 0.75;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.confirm-resend {
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.confirm-resend-btn {
+  background: none;
+  border: none;
+  color: var(--accent-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.confirm-resend-btn:hover {
+  opacity: 0.8;
+}

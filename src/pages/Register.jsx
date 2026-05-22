@@ -10,6 +10,7 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
   const { signUp } = useAuth();
 
@@ -24,13 +25,49 @@ export default function Register() {
       setError(signUpError.message);
       setLoading(false);
     } else {
-      // By default Supabase auto-signs in if email confirmations are disabled.
-      // If email confirmations are enabled, they need to check their email.
-      // We will assume auto-sign-in or a simple redirect for now.
-      navigate('/dashboard');
+      setSubmitted(true);
     }
   };
 
+  // ── Email confirmation screen ─────────────────────────────────
+  if (submitted) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card confirm-card">
+          <div className="confirm-icon-wrap">
+            <div className="confirm-icon-ring">
+              <svg className="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="M2 7l10 7 10-7" />
+              </svg>
+            </div>
+          </div>
+
+          <h1 className="confirm-title">Check your email</h1>
+          <p className="confirm-body">
+            We've sent a confirmation link to<br />
+            <strong className="confirm-email">{email}</strong>
+          </p>
+          <p className="confirm-hint">
+            Click the link in the email to activate your account. If you don't see it, check your spam folder.
+          </p>
+
+          <button className="auth-button" onClick={() => navigate('/login')}>
+            Go to Sign In
+          </button>
+
+          <p className="confirm-resend">
+            Wrong email?{' '}
+            <button className="confirm-resend-btn" onClick={() => setSubmitted(false)}>
+              Try again
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Registration form ─────────────────────────────────────────
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -94,7 +131,7 @@ export default function Register() {
         </form>
 
         <div className="auth-footer">
-          Already have an account? 
+          Already have an account?
           <Link to="/login" className="auth-link">Sign in</Link>
         </div>
       </div>
