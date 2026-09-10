@@ -6,6 +6,8 @@ import Sidebar from './components/Sidebar';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Invest from './pages/Invest';
 import Portfolio from './pages/Portfolio';
@@ -55,6 +57,8 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/*" element={<AppLayout />} />
       </Routes>
     </BrowserRouter>

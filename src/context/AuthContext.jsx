@@ -75,6 +75,12 @@ export function AuthProvider({ children }) {
     return supabase.auth.signOut();
   };
 
+  const resetPassword = async (email) => {
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+  };
+
   const value = {
     user,
     profile,
@@ -82,6 +88,7 @@ export function AuthProvider({ children }) {
     signIn,
     signUp,
     signOut,
+    resetPassword,
   };
 
   return (

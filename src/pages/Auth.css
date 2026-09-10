@@ -143,6 +143,64 @@
   text-align: center;
 }
 
+/* ── Forgot / reset password ───────────────────────────────── */
+.forgot-password-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
+}
+.forgot-password-link {
+  font-size: 13px;
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.forgot-password-link:hover { text-decoration: underline; }
+
+.auth-button-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-icon {
+  position: absolute;
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.form-input.has-icon { padding-left: 40px; }
+.input-trailing-btn {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.input-trailing-btn:hover { color: var(--text-primary); }
+.input-trailing-icon { width: 16px; height: 16px; }
+.form-hint {
+  font-size: 12px;
+  font-weight: 500;
+}
+.form-hint.ok  { color: var(--accent-secondary); }
+.form-hint.bad { color: var(--accent-danger); }
+
 .auth-footer {
   margin-top: 32px;
   text-align: center;
