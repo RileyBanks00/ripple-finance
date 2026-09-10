@@ -38,7 +38,7 @@
   background: var(--inv-color, #6c63ff);
   border-radius: 3px 0 0 3px;
 }
-.port-inv-card:hover { border-color: rgba(255,255,255,0.12); transform: translateX(3px); }
+.port-inv-card:hover { border-color: var(--hover-border); transform: translateX(3px); }
 
 .port-inv-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
 .port-inv-icon {
@@ -79,7 +79,7 @@
   background: var(--bg-glass); border: 1px solid var(--border);
   transition: all 0.2s;
 }
-.port-wallet-chip:hover { border-color: rgba(255,255,255,0.12); }
+.port-wallet-chip:hover { border-color: var(--hover-border); }
 .pwc-icon {
   width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -95,6 +95,15 @@
 
 @media (max-width: 768px) {
   .port-summary-cards { grid-template-columns: 1fr 1fr; }
+  .port-summary-value { font-size: 20px; }
   .port-inv-header { flex-wrap: wrap; }
-  .port-inv-right { width: 100%; }
+  .port-inv-right { width: 100%; text-align: left; }
+  .port-inv-card { padding: 18px 14px; }
+  .port-inv-footer { gap: 14px; }
+  .port-detail { min-width: 70px; }
+  .dash-card { padding: 18px 14px; }
+}
+@media (max-width: 420px) {
+  .port-summary-cards { grid-template-columns: 1fr; }
+  .page-title { font-size: 21px; }
 }

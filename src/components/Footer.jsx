@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import DataIcon from './DataIcon';
 import rippleLogo from '../assets/ripple.png';
 import './Footer.css';
 
@@ -42,10 +43,10 @@ const socials = [
 ];
 
 const badges = [
-  { icon: '🔐', text: 'SSL Secured' },
-  { icon: '✅', text: 'KYC Compliant' },
-  { icon: '🛡', text: 'SOC 2 Certified' },
-  { icon: '💎', text: '$250M Insurance' },
+  { icon: 'locked', text: 'SSL Secured' },
+  { icon: 'check-badge', text: 'KYC Compliant' },
+  { icon: 'shield', text: 'SOC 2 Certified' },
+  { icon: 'sparkles', text: '$250M Insurance' },
 ];
 
 export default function Footer() {
@@ -76,7 +77,7 @@ export default function Footer() {
         <div className="container footer-badges-inner">
           {badges.map(b => (
             <div className="footer-badge" key={b.text}>
-              <span className="footer-badge-icon">{b.icon}</span>
+              <DataIcon name={b.icon} className="footer-badge-icon" />
               <span>{b.text}</span>
             </div>
           ))}

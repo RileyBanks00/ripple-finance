@@ -79,6 +79,61 @@
   --duration-fast: 150ms;
   --duration-md:   300ms;
   --duration-slow: 500ms;
+
+  /* Extra surfaces (overridable per theme) */
+  --bg-inset:      #0a0910;                  /* inputs, code, projections */
+  --hover-border:  rgba(255, 255, 255, 0.12);/* row/card hover borders */
+  --row-divider:   rgba(255, 255, 255, 0.03);/* table row borders */
+  --scrollbar-track: var(--bg-primary);
+  --scrollbar-thumb: var(--accent-primary);
+  --chart-tick:    #4a5568;                  /* axis tick text */
+  --chart-grid:    rgba(255, 255, 255, 0.04);/* cartesian grid lines */
+  --chart-label:   #8892b0;                  /* tooltip label text */
+}
+
+/* ─────────────────────────────────────────────
+   LIGHT THEME — warm paper, same violet accents
+   ───────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-primary:    #f6f5fb;   /* warm paper */
+  --bg-secondary:  #eeeaf7;   /* lifted lilac-grey */
+  --bg-card:       #ffffff;   /* pure card surface */
+  --bg-card-hover: #f4f1fb;
+  --bg-glass:      rgba(28, 20, 60, 0.045);
+  --bg-glass-hover:rgba(28, 20, 60, 0.09);
+
+  --accent-primary: #7c3aed;  /* deepened for contrast on white */
+  --accent-secondary:#0a9e7d;
+  --accent-gold:    #b45309;
+  --accent-danger:  #dc2647;
+  --accent-blue:    #0284c7;
+
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  --gradient-green:   linear-gradient(135deg, #0ea583 0%, #0891b2 100%);
+  --gradient-gold:    linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --gradient-danger:  linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+  --gradient-hero:    linear-gradient(135deg, #f6f5fb 0%, #e9e2f7 50%, #f6f5fb 100%);
+
+  --text-primary:   #1b1730;   /* deep violet-black */
+  --text-secondary: #5c5573;   /* muted plum-grey */
+  --text-muted:     #8d86a3;
+
+  --border:        rgba(27, 23, 48, 0.1);
+  --border-accent: rgba(124, 58, 237, 0.35);
+
+  --shadow-sm:    0 2px 8px rgba(27, 23, 48, 0.07);
+  --shadow-md:    0 8px 32px rgba(27, 23, 48, 0.1);
+  --shadow-lg:    0 16px 64px rgba(27, 23, 48, 0.14);
+  --shadow-glow:  0 0 40px rgba(139, 92, 246, 0.2);
+  --shadow-green: 0 0 40px rgba(10, 158, 125, 0.16);
+
+  --bg-inset:      #f1edf9;
+  --hover-border:  rgba(27, 23, 48, 0.16);
+  --row-divider:   rgba(27, 23, 48, 0.06);
+  --scrollbar-track: #f6f5fb;
+  --chart-tick:    #6b6580;
+  --chart-grid:    rgba(27, 23, 48, 0.07);
+  --chart-label:   #5c5573;
 }
 
 html {
@@ -98,8 +153,8 @@ body {
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 99px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
 
 /* Selection */
 ::selection { background: rgba(108, 99, 255, 0.3); color: #fff; }
@@ -231,4 +286,14 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
 /* Responsive */
 @media (max-width: 768px) {
   .container { padding: 0 var(--space-md); }
+}
+
+/* Reduced motion — respect user preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
 }

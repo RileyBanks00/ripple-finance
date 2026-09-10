@@ -21,7 +21,7 @@
 /* Grid */
 .invest-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -43,7 +43,7 @@
 }
 .invest-card.hovered {
   transform: translateY(-6px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  box-shadow: var(--shadow-md);
 }
 .invest-card.hovered::after { opacity: 0.4; }
 
@@ -51,8 +51,10 @@
 .invest-card-icon {
   width: 46px; height: 46px; border-radius: 13px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
+  color: #fff;
 }
+.invest-card-icon .data-icon { width: 24px; height: 24px; }
+.btn-icon { width: 14px; height: 14px; }
 .invest-card-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .invest-card-type { font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; }
 .invest-card-risk { font-size: 12px; font-weight: 600; }
@@ -83,14 +85,15 @@
   border-radius: var(--radius-md); border: none;
   cursor: pointer; margin-top: auto;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-sm);
 }
-.invest-btn:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
+.invest-btn:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }
 
 /* Modal */
 .modal-overlay {
-  position: fixed; inset: 0; z-index: 500;
-  background: rgba(0,0,0,0.75);
+  position: fixed; inset: 0;  z-index: 500;
+  background: rgba(0,0,0,0.75); /* fallback */
+  background: color-mix(in srgb, var(--bg-primary) 65%, transparent);
   backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
@@ -117,8 +120,10 @@
 .modal-icon {
   width: 56px; height: 56px; border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 28px; margin-bottom: 16px;
+  margin-bottom: 16px;
+  color: #fff;
 }
+.modal-icon .data-icon { width: 28px; height: 28px; }
 .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
 .modal-sub   { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
 
@@ -174,11 +179,19 @@
 .modal-2btns { display: flex; gap: 12px; }
 
 .success-screen { text-align: center; padding: 20px 0; }
-.success-icon { font-size: 64px; margin-bottom: 20px; }
+.success-icon { width: 64px; height: 64px; margin: 0 auto 20px; color: var(--accent-secondary); }
 .success-screen h2 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
 .success-screen p  { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
 
 @media (max-width: 600px) {
   .invest-grid { grid-template-columns: 1fr; }
   .modal { padding: 24px; }
+  .page-title { font-size: 21px; }
+  .invest-apy-num { font-size: 34px; }
+  .modal-2btns { flex-direction: column; }
+  .quick-btn { flex: 1 1 calc(50% - 8px); }
+}
+@media (max-width: 380px) {
+  .modal { padding: 20px 14px; }
+  .modal-overlay { padding: 12px; }
 }

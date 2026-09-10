@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { stats, reviews, cryptoPrices, portfolioHistory } from '../data/mockData';
+import { stats, reviews } from '../data/mockData';
+import { useCryptoPrices, useMarketHistory } from '../hooks/useCryptoPrices';
+import DataIcon from '../components/DataIcon';
 import Footer from '../components/Footer';
+import ThemeToggle from '../components/ThemeToggle';
 import './Landing.css';
 
 const chartData = [
@@ -15,17 +18,38 @@ const chartData = [
   { m: 'Oct', v: 56 }, { m: 'Nov', v: 54 }, { m: 'Dec', v: 63 },
 ];
 
-function TickerBar() {
-  const prices = [...cryptoPrices, ...cryptoPrices];
+// Demo basket used by the hero card: real prices × fixed demo holdings
+const HERO_HOLDINGS = { BTC: 0.5, ETH: 4, SOL: 60 };
+
+// Theme-aware tooltip styling (CSS vars resolve inside SVG too)
+const heroTooltipStyle = {
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border)',
+  borderRadius: 8,
+  fontSize: 12,
+  boxShadow: 'var(--shadow-md)',
+  color: 'var(--text-primary)',
+};
+
+function TickerBar({ prices, isLive }) {
+  const doubled = [...prices, ...prices];
   return (
     <div className="ticker-wrap">
+      <div className={`ticker-live-pill ${isLive ? 'live' : 'stale'}`}>
+        <span className="ticker-live-dot" />
+        {isLive ? 'Live prices' : 'Delayed prices'}
+      </div>
       <div className="ticker-track">
-        {prices.map((p, i) => (
-          <div className="ticker-item" key={i}>
-            <span className="ticker-coin" style={{ color: p.color }}>{p.icon} {p.coin}</span>
-            <span className="ticker-price">${p.price.toLocaleString()}</span>
+        {doubled.map((p, i) => (
+          <div className="ticker-item" key={`${p.coin}-${i}`}>
+            <span className="ticker-coin" style={{ color: p.color }}>
+              <DataIcon name={p.icon} className="data-icon-inline" /> {p.coin}
+            </span>
+            <span className="ticker-price">
+              ${p.price.toLocaleString(undefined, { maximumFractionDigits: p.price < 1 ? 4 : 2 })}
+            </span>
             <span className={`ticker-change ${p.change >= 0 ? 'up' : 'dn'}`}>
-              {p.change >= 0 ? '▲' : '▼'} {Math.abs(p.change)}%
+              {p.change >= 0 ? '▲' : '▼'} {Math.abs(p.change).toFixed(2)}%
             </span>
           </div>
         ))}
@@ -78,6 +102,18 @@ function MarqueeReviews() {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { prices, isLive } = useCryptoPrices();
+  const { history: marketHistory } = useMarketHistory({ holdings: HERO_HOLDINGS, days: 30 });
+
+  // Demo portfolio value: sum of holdings × live prices (null while loading)
+  const heroValue = prices.reduce(
+    (sum, p) => sum + (HERO_HOLDINGS[p.coin] || 0) * p.price,
+    0
+  );
+  const heroHistory = marketHistory || chartData; // fall back to static demo curve
+  const firstV = heroHistory[0]?.v || 0;
+  const lastV = heroHistory[heroHistory.length - 1]?.v || 0;
+  const heroChangePct = firstV > 0 ? ((lastV - firstV) / firstV) * 100 : 0;
 
   return (
     <div className="landing">
@@ -100,6 +136,7 @@ export default function Landing() {
           </div>
           <div className="land-nav-divider" />
           <div className="land-nav-actions">
+            <ThemeToggle />
             <button className="btn-secondary" onClick={() => navigate('/login')} id="nav-signin-btn">Sign In</button>
             <button className="btn-primary" onClick={() => navigate('/register')} id="nav-getstarted-btn">Get Started</button>
           </div>
@@ -107,7 +144,7 @@ export default function Landing() {
       </nav>
 
       {/* TICKER */}
-      <TickerBar />
+      <TickerBar prices={prices} isLive={isLive} />
 
       {/* HERO */}
       <section className="hero">
@@ -144,7 +181,7 @@ export default function Landing() {
           <div className="hero-stats animate-fade-up" style={{ animationDelay: '0.4s' }}>
             {stats.map(s => (
               <div className="hero-stat" key={s.label}>
-                <span className="hero-stat-icon">{s.icon}</span>
+                <span className="hero-stat-icon"><DataIcon name={s.icon} /></span>
                 <span className="hero-stat-value">{s.value}</span>
                 <span className="hero-stat-label">{s.label}</span>
               </div>
@@ -156,14 +193,20 @@ export default function Landing() {
         <div className="hero-card animate-float">
           <div className="hero-card-header">
             <div>
-              <div className="hero-card-label">Portfolio Value</div>
-              <div className="hero-card-value">$63,420.80</div>
-              <div className="hero-card-change up">▲ +24.8% this year</div>
+              <div className="hero-card-label">Demo Portfolio Value</div>
+              <div className="hero-card-value">
+                {heroValue > 0
+                  ? `$${heroValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                  : '—'}
+              </div>
+              <div className={`hero-card-change ${heroChangePct >= 0 ? 'up' : 'dn'}`}>
+                {heroChangePct >= 0 ? '▲' : '▼'} {heroChangePct >= 0 ? '+' : ''}{heroChangePct.toFixed(1)}% in 30 days
+              </div>
             </div>
-            <div className="hero-card-badge">Live</div>
+            <div className="hero-card-badge"><span className="live-dot" />{isLive ? 'Live' : 'Delayed'}</div>
           </div>
           <ResponsiveContainer width="100%" height={140}>
-            <AreaChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+            <AreaChart data={heroHistory} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="hGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%"  stopColor="#6c63ff" stopOpacity={0.4}/>
@@ -173,18 +216,25 @@ export default function Landing() {
               <XAxis dataKey="m" hide />
               <YAxis hide />
               <Tooltip
-                contentStyle={{ background: '#161f35', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 12 }}
-                formatter={v => [`$${v}K`, 'Value']}
-                labelStyle={{ color: '#8892b0' }}
+                contentStyle={heroTooltipStyle}
+                formatter={v => [`$${v.toLocaleString()}K`, 'Value']}
+                labelStyle={{ color: 'var(--chart-label)' }}
               />
               <Area type="monotone" dataKey="v" stroke="#6c63ff" strokeWidth={2.5} fill="url(#hGrad)" />
             </AreaChart>
           </ResponsiveContainer>
           <div className="hero-card-coins">
-            {['₿','Ξ','◎'].map((c, i) => (
-              <div className="hero-coin-chip" key={i}>{c}</div>
-            ))}
-            <span className="hero-card-sub">Multi-asset portfolio</span>
+            {['BTC', 'ETH', 'SOL'].map((coin, i) => {
+              const p = prices.find(x => x.coin === coin);
+              if (!p) return null;
+              const holding = HERO_HOLDINGS[coin] || 0;
+              return (
+                <div className="hero-coin-chip" key={coin} style={{ color: p.color }} title={`${holding} ${coin} — $${(holding * p.price).toLocaleString(undefined, { maximumFractionDigits: 0 })}`}>
+                  <DataIcon name={p.icon} className="data-icon" />
+                </div>
+                );
+            })}
+            <span className="hero-card-sub">Multi-asset demo basket · 0.5 BTC · 4 ETH · 60 SOL</span>
           </div>
         </div>
       </section>
@@ -199,13 +249,13 @@ export default function Landing() {
           </div>
           <div className="products-grid">
             {[
-              { icon: '🔒', title: 'Fixed Savings', apy: '8.5–16%', desc: 'Lock your crypto for 30–180 days and earn guaranteed fixed returns. Capital protected and fully audited.', color: '#00d4aa', grad: 'linear-gradient(135deg,#00d4aa,#0891b2)', risk: 'Low Risk' },
-              { icon: '💰', title: 'High-Yield Savings', apy: '8.2%', desc: 'A flexible savings account that earns daily. Withdraw anytime with no penalty — the perfect liquid yield strategy.', color: '#f5a623', grad: 'linear-gradient(135deg,#f5a623,#e87c27)', risk: 'Low Risk' },
-              { icon: '📈', title: 'Crypto Growth', apy: '24.8%', desc: 'Invest in an auto-rebalanced BTC + ETH blend powered by DeFi yield strategies. Passive crypto income redefined.', color: '#6c63ff', grad: 'linear-gradient(135deg,#6c63ff,#3b82f6)', risk: 'Medium Risk' },
-              { icon: '🚀', title: 'Altcoin Portfolio', apy: '38.5%', desc: 'Our highest-yield product. Actively managed exposure to SOL, BNB, AVAX and more. For the bold investor.', color: '#9945ff', grad: 'linear-gradient(135deg,#9945ff,#6c63ff)', risk: 'High Risk' },
+              { icon: 'locked', title: 'Fixed Savings', apy: '8.5–16%', desc: 'Lock your crypto for 30–180 days and earn guaranteed fixed returns. Capital protected and fully audited.', color: '#00d4aa', grad: 'linear-gradient(135deg,#00d4aa,#0891b2)', risk: 'Low Risk' },
+              { icon: 'banknote', title: 'High-Yield Savings', apy: '8.2%', desc: 'A flexible savings account that earns daily. Withdraw anytime with no penalty — the perfect liquid yield strategy.', color: '#f5a623', grad: 'linear-gradient(135deg,#f5a623,#e87c27)', risk: 'Low Risk' },
+              { icon: 'trending-up', title: 'Crypto Growth', apy: '24.8%', desc: 'Invest in an auto-rebalanced BTC + ETH blend powered by DeFi yield strategies. Passive crypto income redefined.', color: '#6c63ff', grad: 'linear-gradient(135deg,#6c63ff,#3b82f6)', risk: 'Medium Risk' },
+              { icon: 'rocket', title: 'Altcoin Portfolio', apy: '38.5%', desc: 'Our highest-yield product. Actively managed exposure to SOL, BNB, AVAX and more. For the bold investor.', color: '#9945ff', grad: 'linear-gradient(135deg,#9945ff,#6c63ff)', risk: 'High Risk' },
             ].map(p => (
               <div className="product-card" key={p.title} style={{ '--accent': p.color }}>
-                <div className="product-card-icon" style={{ background: p.grad }}>{p.icon}</div>
+                <div className="product-card-icon" style={{ background: p.grad }}><DataIcon name={p.icon} className="data-icon icon-tile" /></div>
                 <div className="product-card-body">
                   <h3>{p.title}</h3>
                   <p>{p.desc}</p>

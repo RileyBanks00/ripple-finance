@@ -28,11 +28,11 @@ export const portfolioHistory = [
 ];
 
 export const walletBalances = [
-  { coin: 'BTC',  name: 'Bitcoin',  balance: 0.4821, usdValue: 19284.50, change24h: +2.4, icon: '₿', color: '#f7931a' },
-  { coin: 'ETH',  name: 'Ethereum', balance: 4.2100, usdValue: 12630.30, change24h: -0.8, icon: 'Ξ', color: '#627eea' },
-  { coin: 'USDT', name: 'Tether',   balance: 8200.00, usdValue: 8200.00, change24h: 0.0, icon: '₮', color: '#26a17b' },
-  { coin: 'SOL',  name: 'Solana',   balance: 62.50,  usdValue: 5000.00, change24h: +5.1, icon: '◎', color: '#9945ff' },
-  { coin: 'BNB',  name: 'BNB',      balance: 8.20,   usdValue: 3205.94, change24h: +1.2, icon: 'B', color: '#f0b90b' },
+  { coin: 'BTC',  name: 'Bitcoin',  balance: 0.4821, usdValue: 19284.50, change24h: +2.4, icon: 'coins', color: '#f7931a' },
+  { coin: 'ETH',  name: 'Ethereum', balance: 4.2100, usdValue: 12630.30, change24h: -0.8, icon: 'cube', color: '#627eea' },
+  { coin: 'USDT', name: 'Tether',   balance: 8200.00, usdValue: 8200.00, change24h: 0.0, icon: 'banknote', color: '#26a17b' },
+  { coin: 'SOL',  name: 'Solana',   balance: 62.50,  usdValue: 5000.00, change24h: +5.1, icon: 'bolt', color: '#9945ff' },
+  { coin: 'BNB',  name: 'BNB',      balance: 8.20,   usdValue: 3205.94, change24h: +1.2, icon: 'coins', color: '#f0b90b' },
 ];
 
 export const investmentProducts = [
@@ -51,7 +51,7 @@ export const investmentProducts = [
     status: 'active',
     color: 'var(--accent-secondary)',
     gradient: 'var(--gradient-green)',
-    icon: '🔒',
+    icon: 'locked',
   },
   {
     id: 'hysa-001',
@@ -68,7 +68,7 @@ export const investmentProducts = [
     status: 'active',
     color: 'var(--accent-gold)',
     gradient: 'var(--gradient-gold)',
-    icon: '💰',
+    icon: 'banknote',
   },
   {
     id: 'crypto-001',
@@ -85,7 +85,7 @@ export const investmentProducts = [
     status: 'active',
     color: 'var(--accent-primary)',
     gradient: 'var(--gradient-primary)',
-    icon: '📈',
+    icon: 'trending-up',
   },
 ];
 
@@ -99,7 +99,7 @@ export const availableProducts = [
     minDeposit: 100,
     duration: 30,
     risk: 'Low',
-    icon: '🔒',
+    icon: 'locked',
     gradient: 'linear-gradient(135deg, #00d4aa, #0891b2)',
     color: '#00d4aa',
     features: ['Capital protected', 'Fixed returns', 'Auto-renew option'],
@@ -113,7 +113,7 @@ export const availableProducts = [
     minDeposit: 500,
     duration: 90,
     risk: 'Low',
-    icon: '🔒',
+    icon: 'locked',
     gradient: 'linear-gradient(135deg, #00d4aa, #0891b2)',
     color: '#00d4aa',
     features: ['Capital protected', 'Higher yield', 'Early exit available'],
@@ -127,7 +127,7 @@ export const availableProducts = [
     minDeposit: 1000,
     duration: 180,
     risk: 'Low',
-    icon: '🔒',
+    icon: 'locked',
     gradient: 'linear-gradient(135deg, #00d4aa, #0891b2)',
     color: '#00d4aa',
     features: ['Max fixed yield', 'Priority support', 'Compound interest'],
@@ -141,7 +141,7 @@ export const availableProducts = [
     minDeposit: 100,
     duration: null,
     risk: 'Low',
-    icon: '💰',
+    icon: 'banknote',
     gradient: 'linear-gradient(135deg, #f5a623, #e87c27)',
     color: '#f5a623',
     features: ['Withdraw anytime', 'Daily compounding', 'No lock-up period'],
@@ -155,7 +155,7 @@ export const availableProducts = [
     minDeposit: 200,
     duration: null,
     risk: 'Medium',
-    icon: '₿',
+    icon: 'coins',
     gradient: 'linear-gradient(135deg, #6c63ff, #3b82f6)',
     color: '#6c63ff',
     features: ['Auto-rebalancing', 'DeFi yields', 'Real-time tracking'],
@@ -169,7 +169,7 @@ export const availableProducts = [
     minDeposit: 500,
     duration: null,
     risk: 'High',
-    icon: '🚀',
+    icon: 'rocket',
     gradient: 'linear-gradient(135deg, #9945ff, #6c63ff)',
     color: '#9945ff',
     features: ['High growth potential', 'Active management', 'Weekly rebalancing'],
@@ -192,14 +192,14 @@ export const transactions = [
 ];
 
 export const cryptoPrices = [
-  { coin: 'BTC',  price: 40000, change: +2.4,  icon: '₿', color: '#f7931a' },
-  { coin: 'ETH',  price: 3000,  change: -0.8,  icon: 'Ξ', color: '#627eea' },
-  { coin: 'SOL',  price: 80,    change: +5.1,  icon: '◎', color: '#9945ff' },
-  { coin: 'BNB',  price: 391,   change: +1.2,  icon: 'B', color: '#f0b90b' },
-  { coin: 'AVAX', price: 35,    change: +3.7,  icon: 'A', color: '#e84142' },
-  { coin: 'ADA',  price: 0.45,  change: -1.5,  icon: '₳', color: '#0033ad' },
-  { coin: 'DOT',  price: 7.2,   change: +0.9,  icon: '●', color: '#e6007a' },
-  { coin: 'MATIC',price: 0.85,  change: +2.1,  icon: 'M', color: '#8247e5' },
+  { coin: 'BTC',  price: 40000, change: +2.4,  icon: 'coins', color: '#f7931a' },
+  { coin: 'ETH',  price: 3000,  change: -0.8,  icon: 'cube', color: '#627eea' },
+  { coin: 'SOL',  price: 80,    change: +5.1,  icon: 'bolt', color: '#9945ff' },
+  { coin: 'BNB',  price: 391,   change: +1.2,  icon: 'coins', color: '#f0b90b' },
+  { coin: 'AVAX', price: 35,    change: +3.7,  icon: 'triangle', color: '#e84142' },
+  { coin: 'ADA',  price: 0.45,  change: -1.5,  icon: 'coins', color: '#0033ad' },
+  { coin: 'DOT',  price: 7.2,   change: +0.9,  icon: 'sparkles', color: '#e6007a' },
+  { coin: 'MATIC',price: 0.85,  change: +2.1,  icon: 'cube', color: '#8247e5' },
 ];
 
 export const reviews = [
@@ -272,8 +272,8 @@ export const reviews = [
 ];
 
 export const stats = [
-  { label: 'Total Assets Managed', value: '$2.4B+', icon: '💎' },
-  { label: 'Active Investors',      value: '180K+',  icon: '👥' },
-  { label: 'Countries Supported',   value: '95+',    icon: '🌍' },
-  { label: 'Average Annual Yield',  value: '18.6%',  icon: '📈' },
+  { label: 'Total Assets Managed', value: '$2.4B+', icon: 'sparkles' },
+  { label: 'Active Investors',      value: '180K+',  icon: 'users' },
+  { label: 'Countries Supported',   value: '95+',    icon: 'globe' },
+  { label: 'Average Annual Yield',  value: '18.6%',  icon: 'trending-up' },
 ];

@@ -1,0 +1,37 @@
+/* DataIcon sizing/alignment — inherits color via currentColor */
+.data-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+/* Icon inside colored icon tiles (stat cards, product cards, wallet chips) */
+.icon-tile .data-icon {
+  width: 55%;
+  height: 55%;
+  color: #fff; /* white glyph on brand-colored tile, both themes */
+}
+
+/* Ticker coins: small square icon on colored tile */
+.ticker-coin-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.ticker-coin-icon .data-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* Inline icon in a coin name row (e.g. ticker text, price rows) */
+.data-icon-inline {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: -3px;
+}

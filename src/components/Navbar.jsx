@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 import './Navbar.css';
 
 export default function Navbar({ onMenuClick }) {
@@ -12,6 +13,8 @@ export default function Navbar({ onMenuClick }) {
       </button>
 
       <div className="topbar-right">
+        <ThemeToggle />
+
         <div className="topbar-live-badge">
           <span className="live-dot" />
           <span>Markets Live</span>

@@ -6,6 +6,17 @@ import { useAuth } from '../context/AuthContext';
 import { useWallets, useInvestments, usePortfolioHistory } from '../hooks/useSupabase';
 import './Portfolio.css';
 
+// Shared chart styling driven by CSS vars so charts adapt to the active theme
+const chartTick = { fill: 'var(--chart-tick)', fontSize: 11 };
+const chartTooltipStyle = {
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border)',
+  borderRadius: 10,
+  fontSize: 12,
+  boxShadow: 'var(--shadow-md)',
+  color: 'var(--text-primary)',
+};
+
 // Monthly yield is fake data for the prototype visualization unless we build a complex query
 const monthlyYield = [
   { month: 'Jan', fixed: 0, hysa: 0, crypto: 0 },
@@ -22,7 +33,7 @@ function InvestmentProgressCard({ inv, history }) {
   return (
     <div className="port-inv-card" style={{ '--inv-color': inv.color }}>
       <div className="port-inv-header">
-        <div className="port-inv-icon" style={{ background: `linear-gradient(135deg, ${inv.color}, #19172a)` }}>{inv.icon}</div>
+        <div className="port-inv-icon" style={{ background: `linear-gradient(135deg, ${inv.color}, var(--bg-card-hover))` }}>{inv.icon}</div>
         <div className="port-inv-info">
           <h3>{inv.name}</h3>
           <div className="port-inv-meta">
@@ -49,7 +60,7 @@ function InvestmentProgressCard({ inv, history }) {
             <XAxis dataKey="date" hide />
             <YAxis hide />
             <Tooltip
-              contentStyle={{ background: '#161f35', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 11 }}
+              contentStyle={chartTooltipStyle}
               formatter={v => [`$${v.toFixed(0)}`, 'Value']}
             />
             <Area type="monotone" dataKey="value" stroke={inv.color} strokeWidth={2}
@@ -88,7 +99,7 @@ export default function Portfolio() {
   const { data: portfolioHistory, loading: hLoad } = usePortfolioHistory();
 
   if (iLoad || wLoad || hLoad) {
-    return <div style={{ padding: 40, color: '#fff' }}><h2>Loading portfolio...</h2></div>;
+    return <div style={{ padding: 40, color: 'var(--text-primary)' }}><h2>Loading portfolio...</h2></div>;
   }
 
   const totalInvested = investments.reduce((s, i) => s + i.totalInvested, 0);
@@ -143,14 +154,14 @@ export default function Portfolio() {
                 <stop offset="95%" stopColor="#00d4aa" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="date" tick={{ fill: '#4a5568', fontSize: 11 }} axisLine={false} tickLine={false}/>
-            <YAxis tick={{ fill: '#4a5568', fontSize: 11 }} axisLine={false} tickLine={false}
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+            <XAxis dataKey="date" tick={chartTick} axisLine={false} tickLine={false}/>
+            <YAxis tick={chartTick} axisLine={false} tickLine={false}
               tickFormatter={v => `$${(v/1000).toFixed(0)}K`} width={48} />
             <Tooltip
-              contentStyle={{ background: '#161f35', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, fontSize: 12 }}
+              contentStyle={chartTooltipStyle}
               formatter={v => [`$${v.toLocaleString()}`, 'Portfolio']}
-              labelStyle={{ color: '#8892b0' }}
+              labelStyle={{ color: 'var(--chart-label)' }}
             />
             <Area type="monotone" dataKey="value" stroke="#00d4aa" strokeWidth={2.5}
               fill="url(#portGrad)" dot={false} activeDot={{ r: 5, fill: '#00d4aa' }} />
@@ -168,16 +179,16 @@ export default function Portfolio() {
         </div>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={monthlyYield} margin={{ top: 5, right: 10, left: 0, bottom: 0 }} barCategoryGap="35%">
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="month" tick={{ fill: '#4a5568', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: '#4a5568', fontSize: 11 }} axisLine={false} tickLine={false}
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+            <XAxis dataKey="month" tick={chartTick} axisLine={false} tickLine={false} />
+            <YAxis tick={chartTick} axisLine={false} tickLine={false}
               tickFormatter={v => `$${v}`} width={44} />
             <Tooltip
-              contentStyle={{ background: '#161f35', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, fontSize: 12 }}
-              cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+              contentStyle={chartTooltipStyle}
+              cursor={{ fill: 'var(--chart-grid)' }}
               formatter={v => [`$${v}`, '']}
             />
-            <Legend wrapperStyle={{ fontSize: 12, color: '#8892b0' }} />
+            <Legend wrapperStyle={{ fontSize: 12, color: 'var(--chart-label)' }} />
             <Bar dataKey="fixed"  fill="#00d4aa" radius={[4,4,0,0]} name="Fixed Savings" />
             <Bar dataKey="hysa"   fill="#f5a623" radius={[4,4,0,0]} name="High-Yield" />
             <Bar dataKey="crypto" fill="#6c63ff" radius={[4,4,0,0]} name="Crypto" />

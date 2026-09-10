@@ -4,10 +4,29 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   useWallets, useInvestments, useTransactions, usePortfolioHistory
 } from '../hooks/useSupabase';
+import DataIcon from '../components/DataIcon';
+import {
+  ArrowTrendingUpIcon,
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  GiftIcon,
+} from '@heroicons/react/24/outline';
 import './Dashboard.css';
+
+// Shared chart styling driven by CSS vars so charts adapt to the active theme
+const chartTick = { fill: 'var(--chart-tick)', fontSize: 11 };
+const chartTooltipStyle = {
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border)',
+  borderRadius: 10,
+  fontSize: 12,
+  boxShadow: 'var(--shadow-md)',
+  color: 'var(--text-primary)',
+};
 
 function StatCard({ label, value, sub, subColor, icon, gradient }) {
   return (
@@ -40,15 +59,16 @@ function MiniPnLChart({ data, color = '#6c63ff' }) {
 }
 
 const txTypeStyle = {
-  deposit:  { color: '#00d4aa', icon: '⬇', label: 'Deposit' },
-  withdraw: { color: '#ff4f6d', icon: '⬆', label: 'Withdraw' },
-  invest:   { color: '#6c63ff', icon: '📈', label: 'Invest' },
-  yield:    { color: '#f5a623', icon: '💰', label: 'Yield' },
+  deposit:  { color: 'var(--accent-secondary)', icon: ArrowDownTrayIcon, label: 'Deposit' },
+  withdraw: { color: 'var(--accent-danger)', icon: ArrowUpTrayIcon, label: 'Withdraw' },
+  invest:   { color: 'var(--accent-primary)', icon: ArrowTrendingUpIcon, label: 'Invest' },
+  yield:    { color: 'var(--accent-gold)', icon: GiftIcon, label: 'Yield' },
 };
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { theme } = useTheme();
   const { data: wallets, loading: wLoading } = useWallets();
   const { data: investments, loading: iLoading } = useInvestments();
   const { data: transactions, loading: tLoading } = useTransactions();
@@ -56,7 +76,7 @@ export default function Dashboard() {
 
   if (wLoading || iLoading || tLoading || hLoading) {
     return (
-      <div style={{ padding: 40, color: '#fff' }}>
+      <div style={{ padding: 40, color: 'var(--text-primary)' }}>
         <h2>Loading your dashboard...</h2>
       </div>
     );
@@ -84,8 +104,8 @@ export default function Dashboard() {
     { name: 'Wallets', value: walletTotal, color: '#3b82f6' }
   ].filter(p => p.value > 0);
 
-  // If completely empty, show a grey placeholder in pie
-  if (pieData.length === 0) pieData.push({ name: 'Empty', value: 1, color: '#2a2b36' });
+  // If completely empty, show a theme-aware placeholder in pie
+  if (pieData.length === 0) pieData.push({ name: 'Empty', value: 1, color: theme === 'light' ? '#e2ddf0' : '#2a2b36' });
 
   return (
     <div className="dashboard">
@@ -105,14 +125,14 @@ export default function Dashboard() {
       <div className="stat-cards-grid">
         <StatCard label="Total Portfolio" value={`$${totalPortfolioValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits:2})}`}
           sub={totalPnL > 0 ? `▲ +${totalPnLPercent.toFixed(2)}% overall` : 'Start investing'} subColor="#00d4aa"
-          icon="💎" gradient="linear-gradient(135deg,#6c63ff,#3b82f6)" />
+          icon={<DataIcon name="sparkles" />} gradient="linear-gradient(135deg,#6c63ff,#3b82f6)" />
         <StatCard label="Total PnL" value={`+$${totalPnL.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits:2})}`}
           sub={totalPnL > 0 ? "▲ Profitable overall" : "-"} subColor="#00d4aa"
-          icon="📈" gradient="linear-gradient(135deg,#00d4aa,#0891b2)" />
+          icon={<DataIcon name="trending-up" />} gradient="linear-gradient(135deg,#00d4aa,#0891b2)" />
         <StatCard label="Active Investments" value={activeInvestmentsCount} sub="Fixed · HYSA · Crypto" subColor="#8892b0"
-          icon="🔒" gradient="linear-gradient(135deg,#f5a623,#e87c27)" />
+          icon={<DataIcon name="locked" />} gradient="linear-gradient(135deg,#f5a623,#e87c27)" />
         <StatCard label="Total Yield Earned" value={`$${thisMonthYield.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits:2})}`} sub="All time" subColor="#8892b0"
-          icon="💰" gradient="linear-gradient(135deg,#9945ff,#6c63ff)" />
+          icon={<DataIcon name="banknote" />} gradient="linear-gradient(135deg,#9945ff,#6c63ff)" />
       </div>
 
       {/* Main Charts Row */}
@@ -142,13 +162,13 @@ export default function Dashboard() {
                   <stop offset="95%" stopColor="#6c63ff" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" tick={{ fill: '#4a5568', fontSize: 11 }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fill: '#4a5568', fontSize: 11 }} axisLine={false} tickLine={false}
+              <XAxis dataKey="date" tick={chartTick} axisLine={false} tickLine={false}/>
+              <YAxis tick={chartTick} axisLine={false} tickLine={false}
                 tickFormatter={v => `$${(v/1000).toFixed(0)}K`} width={48} />
               <Tooltip
-                contentStyle={{ background: '#161f35', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, fontSize: 12 }}
+                contentStyle={chartTooltipStyle}
                 formatter={v => [`$${v.toLocaleString()}`, 'Value']}
-                labelStyle={{ color: '#8892b0' }}
+                labelStyle={{ color: 'var(--chart-label)' }}
               />
               <Area type="monotone" dataKey="value" stroke="#6c63ff" strokeWidth={2.5}
                 fill="url(#pgGrad)" dot={false} activeDot={{ r: 5, fill: '#6c63ff' }} />
@@ -172,7 +192,7 @@ export default function Dashboard() {
               ))}
             </Pie>
             <Tooltip
-              contentStyle={{ background: '#161f35', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 12 }}
+              contentStyle={chartTooltipStyle}
               formatter={v => [`$${v.toLocaleString()}`, '']}
             />
           </PieChart>
@@ -205,7 +225,7 @@ export default function Dashboard() {
                 const mini = [1,2,3,4,5,6].map(i => ({ value: inv.currentValue - 100 + i*20 }));
                 return (
                   <div className="investment-row" key={inv.id}>
-                    <div className="inv-icon" style={{ background: `linear-gradient(135deg, ${inv.color}, #19172a)` }}>{inv.icon}</div>
+                    <div className="inv-icon" style={{ background: `linear-gradient(135deg, ${inv.color}, var(--bg-card-hover))` }}><DataIcon name={inv.icon} /></div>
                     <div className="inv-info">
                       <div className="inv-name">{inv.name}</div>
                       <div className="inv-meta">
@@ -237,7 +257,7 @@ export default function Dashboard() {
             ) : (
               wallets.map(w => (
                 <div className="wallet-row" key={w.coin}>
-                  <div className="wallet-icon" style={{ background: w.color }}>{w.icon}</div>
+                  <div className="wallet-icon" style={{ background: w.color }}><DataIcon name={w.icon} /></div>
                   <div className="wallet-info">
                     <div className="wallet-name">{w.name}</div>
                     <div className="wallet-bal">{w.balance} {w.coin}</div>
@@ -269,14 +289,14 @@ export default function Dashboard() {
             <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>No recent transactions.</div>
           ) : (
             recentTx.map(tx => {
-              const style = txTypeStyle[tx.type] || { color: '#ccc', icon: '•', label: tx.type };
+              const style = txTypeStyle[tx.type] || { color: 'var(--text-secondary)', icon: null, label: tx.type };
               return (
                 <div className="tx-table-row" key={tx.id}>
                   <span className="tx-type" style={{ color: style.color }}>
-                    {style.icon} {style.label}
+                    {style.icon ? <style.icon className="tx-type-icon" /> : null} {style.label}
                   </span>
                   <span className="tx-asset">{tx.asset}</span>
-                  <span className="tx-amount" style={{ color: tx.amount > 0 ? '#00d4aa' : '#ff4f6d' }}>
+                  <span className="tx-amount" style={{ color: tx.amount > 0 ? 'var(--accent-secondary)' : 'var(--accent-danger)' }}>
                     {tx.amount > 0 ? '+' : ''}{tx.amount} {tx.asset}
                   </span>
                   <span className={`tx-status status-${tx.status}`}>{tx.status}</span>

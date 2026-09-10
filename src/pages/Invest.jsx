@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import DataIcon from '../components/DataIcon';
 import { useProducts } from '../hooks/useSupabase';
 import './Invest.css';
 
@@ -6,7 +8,11 @@ const FILTERS = ['All', 'Fixed', 'HYSA', 'Crypto'];
 
 function ProductCard({ product, onInvest }) {
   const [hovered, setHovered] = useState(false);
-  const riskColor = { Low: '#00d4aa', Medium: '#f5a623', High: '#ff4f6d' }[product.risk];
+  const riskColor = {
+    Low: 'var(--accent-secondary)',
+    Medium: 'var(--accent-gold)',
+    High: 'var(--accent-danger)',
+  }[product.risk];
 
   return (
     <div
@@ -16,7 +22,7 @@ function ProductCard({ product, onInvest }) {
       style={{ '--card-color': product.color }}
     >
       <div className="invest-card-top">
-        <div className="invest-card-icon" style={{ background: product.gradient }}>{product.icon}</div>
+        <div className="invest-card-icon" style={{ background: product.gradient }}><DataIcon name={product.icon} /></div>
         <div className="invest-card-meta">
           <span className="invest-card-type">{product.type.toUpperCase()}</span>
           <span className="invest-card-risk" style={{ color: riskColor }}>● {product.risk}</span>
@@ -55,9 +61,7 @@ function ProductCard({ product, onInvest }) {
         id={`invest-btn-${product.id}`}
       >
         Invest Now
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
+        <ArrowRightIcon className="btn-icon" />
       </button>
     </div>
   );
@@ -77,7 +81,7 @@ function InvestModal({ product, onClose }) {
 
         {step === 1 && (
           <>
-            <div className="modal-icon" style={{ background: product.gradient }}>{product.icon}</div>
+            <div className="modal-icon" style={{ background: product.gradient }}><DataIcon name={product.icon} /></div>
             <h2 className="modal-title">Invest in {product.name}</h2>
             <p className="modal-sub">{product.subtitle} · {product.apy}% APY</p>
 
@@ -161,7 +165,7 @@ function InvestModal({ product, onClose }) {
 
         {step === 3 && (
           <div className="success-screen">
-            <div className="success-icon">🎉</div>
+            <SparklesIcon className="success-icon" />
             <h2>Investment Placed!</h2>
             <p>Your ${parseFloat(amount).toLocaleString()} investment in <strong>{product.name}</strong> is now active and earning {product.apy}% APY.</p>
             <button className="btn-primary" onClick={onClose} id="modal-done-btn"
@@ -181,7 +185,7 @@ export default function Invest() {
   const [selected, setSelected] = useState(null);
 
   if (loading) {
-    return <div style={{ padding: 40, color: '#fff' }}><h2>Loading products...</h2></div>;
+    return <div style={{ padding: 40, color: 'var(--text-primary)' }}><h2>Loading products...</h2></div>;
   }
 
   const filtered = availableProducts.filter(p =>

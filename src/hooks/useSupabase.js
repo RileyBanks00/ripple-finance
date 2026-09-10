@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { cryptoPrices, availableProducts } from '../data/mockData';
+import { useCryptoPrices } from './useCryptoPrices';
+import { cryptoPrices as MOCK_PRICES, availableProducts } from '../data/mockData';
+import { normalizeIcon, coinMeta } from '../utils/icons';
 
 // Fetch user's wallets and combine with live/mock prices
 export function useWallets() {
   const { user } = useAuth();
+  const { prices } = useCryptoPrices();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,18 +22,20 @@ export function useWallets() {
         .eq('user_id', user.id);
         
       if (walletsData) {
-        // Map with crypto details
+        // Enrich wallet rows with live prices and normalized coin metadata
         const enriched = walletsData.map(w => {
-          const coinData = cryptoPrices.find(c => c.coin === w.asset) || { price: 0, icon: '?', color: '#ccc', change: 0 };
+          const meta = coinMeta(w.asset);
+          const priceRow = prices.find(c => c.coin === w.asset);
+          const price = priceRow?.price ?? 0;
           return {
             id: w.id,
             coin: w.asset,
-            name: w.asset === 'BTC' ? 'Bitcoin' : w.asset === 'ETH' ? 'Ethereum' : w.asset === 'USDT' ? 'Tether' : w.asset === 'SOL' ? 'Solana' : w.asset,
+            name: meta.name,
             balance: Number(w.balance),
-            usdValue: Number(w.balance) * coinData.price,
-            change24h: coinData.change,
-            icon: coinData.icon,
-            color: coinData.color
+            usdValue: Number(w.balance) * price,
+            change24h: priceRow?.change ?? 0,
+            icon: meta.icon,
+            color: meta.color,
           };
         });
         setData(enriched);
@@ -47,7 +52,7 @@ export function useWallets() {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [user]);
+  }, [user, prices]);
 
   return { data, loading };
 }
@@ -83,7 +88,7 @@ export function useInvestments() {
             pnlPercent: Number(inv.amount_usd) > 0 ? (Number(inv.yield_earned) / Number(inv.amount_usd)) * 100 : 0,
             status: inv.status,
             color: prod.color,
-            icon: prod.icon,
+            icon: normalizeIcon(prod.icon),
           };
         });
         setData(enriched);
@@ -166,7 +171,7 @@ export function useProducts() {
           minDeposit: Number(p.min_deposit),
           duration: p.duration_days,
           risk: p.risk_level.charAt(0).toUpperCase() + p.risk_level.slice(1),
-          icon: p.icon,
+          icon: normalizeIcon(p.icon),
           gradient: `linear-gradient(135deg, ${p.color}, #19172a)`,
           color: p.color,
           features: p.features,

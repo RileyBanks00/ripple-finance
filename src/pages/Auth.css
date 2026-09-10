@@ -1,10 +1,22 @@
 .auth-container {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg-primary);
   padding: 24px;
+}
+
+.auth-theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+@media (max-width: 480px) {
+  .auth-theme-toggle { top: 12px; right: 12px; }
+  .auth-card { padding: 28px 20px; }
 }
 
 .auth-card {

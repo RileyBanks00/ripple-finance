@@ -1,30 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import QRCode from 'react-qr-code';
-import { cryptoPrices } from '../data/mockData';
+import { useCryptoPrices } from '../hooks/useCryptoPrices';
 import { useDepositAddresses } from '../hooks/useSupabase';
+import DataIcon from '../components/DataIcon';
+import {
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  LockClosedIcon,
+  BoltIcon,
+  ClipboardDocumentIcon,
+  CheckIcon,
+} from '@heroicons/react/24/outline';
 import './Deposit.css';
 
 const SUPPORTED_COINS = [
-  { coin: 'BTC',  name: 'Bitcoin',  icon: '₿', color: '#f7931a', defaultNetwork: 'Bitcoin (BTC)' },
-  { coin: 'ETH',  name: 'Ethereum', icon: 'Ξ', color: '#627eea', defaultNetwork: 'Ethereum (ERC-20)' },
-  { coin: 'USDT', name: 'Tether',   icon: '₮', color: '#26a17b', defaultNetwork: 'Ethereum (ERC-20)' },
-  { coin: 'SOL',  name: 'Solana',   icon: '◎', color: '#9945ff', defaultNetwork: 'Solana (SOL)' },
-  { coin: 'BNB',  name: 'BNB',      icon: 'B', color: '#f0b90b', defaultNetwork: 'BNB Smart Chain (BEP-20)' },
+  { coin: 'BTC',  name: 'Bitcoin',  icon: 'coins',    color: '#f7931a', defaultNetwork: 'Bitcoin (BTC)' },
+  { coin: 'ETH',  name: 'Ethereum', icon: 'cube',     color: '#627eea', defaultNetwork: 'Ethereum (ERC-20)' },
+  { coin: 'USDT', name: 'Tether',   icon: 'banknote', color: '#26a17b', defaultNetwork: 'Ethereum (ERC-20)' },
+  { coin: 'SOL',  name: 'Solana',   icon: 'bolt',     color: '#9945ff', defaultNetwork: 'Solana (SOL)' },
+  { coin: 'BNB',  name: 'BNB',      icon: 'coins',    color: '#f0b90b', defaultNetwork: 'BNB Smart Chain (BEP-20)' },
 ];
-
-function CopyIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="9" y="9" width="13" height="13" rx="2"/>
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-    </svg>
-  );
-}
-
-
 
 export default function Deposit() {
   const { data: dbAddresses, loading } = useDepositAddresses();
+  const { prices } = useCryptoPrices();
   const [selectedCoin, setSelectedCoin] = useState(SUPPORTED_COINS[0]);
   const [copied, setCopied] = useState(false);
   const [amount, setAmount] = useState('');
@@ -32,8 +31,18 @@ export default function Deposit() {
   // Find user's specific address for the selected coin
   const userAddress = dbAddresses.find(a => a.asset === selectedCoin.coin);
 
-  const price = cryptoPrices.find(p => p.coin === selectedCoin.coin)?.price || 1;
-  const cryptoEquiv = amount ? (parseFloat(amount) / price).toFixed(6) : '';
+  const priceRow = prices.find(p => p.coin === selectedCoin.coin);
+  const price = priceRow?.price ?? 0;
+  const cryptoEquiv = amount && price > 0 ? (parseFloat(amount) / price).toFixed(6) : '';
+
+
+
+  function handleCopy() {
+    if (!userAddress) return;
+    navigator.clipboard.writeText(userAddress.address).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const isAvailable = selectedCoin.coin === 'BTC' || selectedCoin.coin === 'USDT';
 
@@ -63,7 +72,7 @@ export default function Deposit() {
             id={`coin-btn-${c.coin.toLowerCase()}`}
             style={{ '--ccolor': c.color }}
           >
-            <span className="coin-btn-icon" style={{ background: c.color }}>{c.icon}</span>
+            <span className="coin-btn-icon" style={{ background: c.color }}><DataIcon name={c.icon} /></span>
             <span className="coin-btn-name">{c.coin}</span>
           </button>
         ))}
@@ -74,7 +83,7 @@ export default function Deposit() {
         <div className="deposit-addr-card dash-card">
           <div className="deposit-coin-header">
             <div className="deposit-coin-icon" style={{ background: selectedCoin.color }}>
-              {selectedCoin.icon}
+              <DataIcon name={selectedCoin.icon} />
             </div>
             <div>
               <h2 className="deposit-coin-name">{selectedCoin.name} ({selectedCoin.coin})</h2>
@@ -86,7 +95,7 @@ export default function Deposit() {
             <div style={{ padding: '40px 0', textAlign: 'center', color: '#8892b0' }}>Loading deposit details...</div>
           ) : !isAvailable ? (
             <div className="deposit-no-address" style={{ borderColor: 'rgba(255,79,109,0.3)', background: 'rgba(255,79,109,0.02)' }}>
-              <div className="deposit-no-addr-icon" style={{ color: '#ff4f6d' }}>⚠</div>
+              <ExclamationTriangleIcon className="deposit-no-addr-icon" style={{ color: 'var(--accent-danger)' }} />
               <h3>Temporarily Unavailable</h3>
               <p>Deposits via this platform for <strong>{selectedCoin.coin}</strong> are temporarily unavailable. Please select BTC or USDT instead.</p>
             </div>
@@ -101,25 +110,25 @@ export default function Deposit() {
                 <div className="deposit-addr-row">
                   <code className="deposit-addr-text">{userAddress.address}</code>
                   <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy} id="copy-addr-btn">
-                    {copied ? '✓ Copied!' : <><CopyIcon /> Copy</>}
+                    {copied ? <><CheckIcon className="btn-icon-sm" /> Copied!</> : <><ClipboardDocumentIcon className="btn-icon-sm" /> Copy</>}
                   </button>
                 </div>
               </div>
               
               <div className="deposit-warnings">
                 <div className="deposit-warn">
-                  <span className="warn-icon">⚠</span>
+                  <ExclamationTriangleIcon className="warn-icon" />
                   <span>Only send <strong>{selectedCoin.coin}</strong> to this address. Sending any other asset will result in permanent loss.</span>
                 </div>
                 <div className="deposit-warn">
-                  <span className="warn-icon">ℹ</span>
+                  <InformationCircleIcon className="warn-icon" />
                   <span>Deposits require <strong>3 confirmations</strong> before they appear in your wallet.</span>
                 </div>
               </div>
             </>
           ) : (
             <div className="deposit-no-address">
-              <div className="deposit-no-addr-icon" style={{ color: selectedCoin.color }}>{selectedCoin.icon}</div>
+              <DataIcon name={selectedCoin.icon} className="deposit-no-addr-icon data-icon" style={{ color: selectedCoin.color }} />
               <h3>Address Not Assigned</h3>
               <p>You don't have a personal <strong>{selectedCoin.coin}</strong> deposit address yet.</p>
               <button className="btn-primary" style={{ marginTop: 16, background: selectedCoin.color }}>
@@ -162,19 +171,24 @@ export default function Deposit() {
                 <button key={v} className="quick-btn" onClick={() => setAmount(String(v))}>${v.toLocaleString()}</button>
               ))}
             </div>
+            <div className="calc-source-note">
+              {priceRow?.source === 'live' ? 'Using live market rate' : 'Using cached rate — refreshes automatically'}
+            </div>
           </div>
 
           {/* Live Prices */}
           <div className="dash-card deposit-prices">
             <h3 className="deposit-calc-title">Live Crypto Prices</h3>
             <div className="deposit-price-list">
-              {cryptoPrices.map(p => (
+              {prices.map(p => (
                 <div className="dep-price-row" key={p.coin}>
-                  <span className="dep-price-icon" style={{ color: p.color }}>{p.icon}</span>
+                  <span className="dep-price-icon" style={{ color: p.color }}><DataIcon name={p.icon} className="data-icon-inline" /></span>
                   <span className="dep-price-coin">{p.coin}</span>
-                  <span className="dep-price-val">${p.price.toLocaleString()}</span>
+                  <span className="dep-price-val">
+                    ${p.price.toLocaleString(undefined, { maximumFractionDigits: p.price < 1 ? 4 : 2 })}
+                  </span>
                   <span className={`dep-price-change ${p.change >= 0 ? 'up' : 'dn'}`}>
-                    {p.change >= 0 ? '▲' : '▼'} {Math.abs(p.change)}%
+                    {p.change >= 0 ? '▲' : '▼'} {Math.abs(p.change).toFixed(2)}%
                   </span>
                 </div>
               ))}
@@ -184,14 +198,14 @@ export default function Deposit() {
           {/* Security note */}
           <div className="dash-card deposit-security">
             <div className="sec-row">
-              <span className="sec-icon">🔐</span>
+              <LockClosedIcon className="sec-icon" />
               <div>
                 <strong>Bank-Level Security</strong>
                 <p>All deposits are secured with 256-bit AES encryption and multi-sig wallet protection.</p>
               </div>
             </div>
             <div className="sec-row">
-              <span className="sec-icon">⚡</span>
+              <BoltIcon className="sec-icon" />
               <div>
                 <strong>Instant Allocation</strong>
                 <p>Funds are allocated to your chosen investment product immediately after confirmation.</p>

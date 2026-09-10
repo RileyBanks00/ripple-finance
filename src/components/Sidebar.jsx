@@ -1,14 +1,22 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import {
+  Squares2X2Icon,
+  ArrowTrendingUpIcon,
+  BriefcaseIcon,
+  ClipboardDocumentListIcon,
+  ArrowDownTrayIcon,
+  ArrowRightStartOnRectangleIcon,
+} from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import rippleLogo from '../assets/ripple.png';
 import './Sidebar.css';
 
 const navItems = [
-  { to: '/dashboard',    icon: '⊞', label: 'Dashboard' },
-  { to: '/invest',       icon: '📈', label: 'Invest' },
-  { to: '/portfolio',    icon: '💼', label: 'Portfolio' },
-  { to: '/transactions', icon: '📋', label: 'Transactions' },
-  { to: '/deposit',      icon: '⬇', label: 'Deposit' },
+  { to: '/dashboard',    icon: Squares2X2Icon,    label: 'Dashboard' },
+  { to: '/invest',       icon: ArrowTrendingUpIcon, label: 'Invest' },
+  { to: '/portfolio',    icon: BriefcaseIcon,     label: 'Portfolio' },
+  { to: '/transactions', icon: ClipboardDocumentListIcon, label: 'Transactions' },
+  { to: '/deposit',      icon: ArrowDownTrayIcon, label: 'Deposit' },
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -39,7 +47,7 @@ export default function Sidebar({ open, onClose }) {
               className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
               onClick={onClose}
             >
-              <span className="sidebar-link-icon">{item.icon}</span>
+              <span className="sidebar-link-icon"><item.icon className="sidebar-nav-icon" /></span>
               <span className="sidebar-link-label">{item.label}</span>
               <span className="sidebar-link-indicator" />
             </NavLink>
@@ -53,7 +61,8 @@ export default function Sidebar({ open, onClose }) {
             </div>
             <div className="sidebar-user-info">
               <span className="sidebar-user-name">{profile?.full_name || 'User'}</span>
-              <button onClick={handleLogout} style={{ background: 'transparent', border: 'none', color: 'var(--accent-danger)', fontSize: '11px', cursor: 'pointer', padding: 0, textAlign: 'left', marginTop: '2px' }}>
+              <button onClick={handleLogout} className="sidebar-signout-btn">
+                <ArrowRightStartOnRectangleIcon className="sidebar-signout-icon" />
                 Sign Out
               </button>
             </div>

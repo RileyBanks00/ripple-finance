@@ -5,10 +5,12 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 16px;
-  padding: 16px 28px;
-  background: rgba(8, 12, 24, 0.85);
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--bg-primary); /* fallback */
+  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
 
@@ -89,7 +91,7 @@
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--accent-danger);
-  border: 2px solid var(--bg-primary);
+  border: 2px solid var(--bg-card);
 }
 
 .topbar-avatar {
@@ -118,12 +120,21 @@
 }
 .app-content {
   flex: 1;
-  padding: 28px;
+  padding: 28px 28px 48px;
   background: var(--bg-primary);
 }
 
 @media (max-width: 900px) {
   .topbar-menu-btn { display: flex; }
+  .topbar { gap: 10px; padding: 10px 14px; }
   .app-main { margin-left: 0; }
-  .app-content { padding: 16px; }
+  .app-content { padding: 16px 16px 40px; }
+}
+@media (max-width: 480px) {
+  .topbar-right { gap: 8px; }
+  .topbar-live-badge { padding: 5px 10px; font-size: 11px; }
+  .topbar-notifications,
+  .topbar-avatar,
+  .theme-toggle { width: 34px; height: 34px; }
+  .topbar-btn { padding: 8px 14px; font-size: 12px; }
 }
