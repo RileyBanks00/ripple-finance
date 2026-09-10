@@ -307,3 +307,13 @@
 .confirm-resend-btn:hover {
   opacity: 0.8;
 }
+.confirm-resend-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resend-cooldown {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}

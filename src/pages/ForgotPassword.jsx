@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
@@ -9,13 +9,47 @@ import {
 } from '@heroicons/react/24/outline';
 import './Auth.css';
 
+const RESEND_COOLDOWN = 60; // seconds
+
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
+  const cooldownRef = useRef(null);
+
+  // Tick the resend cooldown down once per second while active
+  useEffect(() => {
+    if (cooldown <= 0) return undefined;
+    cooldownRef.current = setInterval(() => {
+      setCooldown((c) => {
+        if (c <= 1) {
+          clearInterval(cooldownRef.current);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(cooldownRef.current);
+  }, [cooldown > 0]);
+
+  // Normalize provider errors: never reveal whether an account exists,
+  // and translate rate limits into friendly copy.
+  function mapResetError(err) {
+    const msg = (err?.message || err?.msg || String(err)).toLowerCase();
+    if (msg.includes('rate limit') || msg.includes('too many') || msg.includes('429')) {
+      return 'Too many reset requests. Please wait a minute and try again.';
+    }
+    if (msg.includes('invalid') && msg.includes('email')) {
+      return 'That email address looks invalid. Please check it and try again.';
+    }
+    // Everything else (including "user not found") gets the same generic text —
+    // we always show the success screen so bots can't probe for real accounts.
+    return 'If an account exists for this email, a reset link is on its way.';
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,12 +59,29 @@ export default function ForgotPassword() {
     const { error: resetError } = await resetPassword(email);
 
     if (resetError) {
-      setError(resetError.message);
+      setError(mapResetError(resetError));
       setLoading(false);
-    } else {
-      setSent(true);
-      setLoading(false);
+      return;
     }
+
+    setLoading(false);
+    setCooldown(RESEND_COOLDOWN);
+    setSent(true);
+  };
+
+  const handleResend = async () => {
+    if (cooldown > 0 || loading) return;
+    setError('');
+    setLoading(true);
+
+    const { error: resetError } = await resetPassword(email);
+
+    if (resetError) {
+      setError(mapResetError(resetError));
+    } else {
+      setCooldown(RESEND_COOLDOWN);
+    }
+    setLoading(false);
   };
 
   // ── Email sent confirmation screen ─────────────────────────────
@@ -45,14 +96,14 @@ export default function ForgotPassword() {
             </div>
           </div>
 
-          <h1 className="confirm-title">Check your email</h1>
+          <h1 className="confirm-title">Check your inbox</h1>
           <p className="confirm-body">
-            We've sent a password reset link to<br />
-            <strong className="confirm-email">{email}</strong>
+            If an account exists for <strong className="confirm-email">{email}</strong>,
+            we've sent a link to reset your password.
           </p>
           <p className="confirm-hint">
-            Click the link in the email to set a new password. The link expires shortly —
-            if you don't see it, check your spam folder.
+            The link expires shortly. If it doesn't arrive within a few minutes,
+            check your spam folder or request another one below.
           </p>
 
           <button className="auth-button" onClick={() => navigate('/login')}>
@@ -60,10 +111,20 @@ export default function ForgotPassword() {
           </button>
 
           <p className="confirm-resend">
-            Wrong email?{' '}
-            <button className="confirm-resend-btn" onClick={() => setSent(false)}>
-              Try again
-            </button>
+            Didn't get the email?{' '}
+            {cooldown > 0 ? (
+              <span className="resend-cooldown">
+                Resend available in {cooldown}s
+              </span>
+            ) : (
+              <button
+                className="confirm-resend-btn"
+                onClick={handleResend}
+                disabled={loading}
+              >
+                {loading ? 'Sending…' : 'Resend link'}
+              </button>
+            )}
           </p>
         </div>
       </div>
