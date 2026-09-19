@@ -1,6 +1,9 @@
 .auth-container {
   position: relative;
+  /* dvh avoids the mobile URL-bar jump that 100vh causes;
+     plain vh first as fallback for older browsers */
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,7 +19,6 @@
 
 @media (max-width: 480px) {
   .auth-theme-toggle { top: 12px; right: 12px; }
-  .auth-card { padding: 28px 20px; }
 }
 
 .auth-card {
@@ -94,14 +96,22 @@
 }
 
 .form-input {
+  width: 100%;
+  min-width: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 12px 16px;
   color: var(--text-primary);
-  font-size: 15px;
+  /* ≥16px prevents iOS Safari auto-zoom on focus */
+  font-size: 16px;
   transition: all 0.2s ease;
 }
+
+/* Inputs inside the icon wrapper need right padding so long values
+   don't run under the trailing eye button */
+.input-icon-wrap .form-input { padding-right: 44px; }
+.input-icon-wrap .form-input:not(.has-icon) { padding-right: 16px; }
 
 .form-input:focus {
   outline: none;
@@ -141,6 +151,8 @@
   border-radius: var(--radius-sm);
   font-size: 13px;
   text-align: center;
+  margin-bottom: 20px;
+  overflow-wrap: anywhere;
 }
 
 /* ── Forgot / reset password ───────────────────────────────── */
@@ -179,24 +191,27 @@
 .form-input.has-icon { padding-left: 40px; }
 .input-trailing-btn {
   position: absolute;
-  right: 10px;
+  right: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  /* 44px min target for touch (Apple HIG / WCAG) */
+  width: 36px;
+  height: 36px;
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--text-muted);
   cursor: pointer;
 }
+.input-trailing-btn:active { transform: scale(0.92); }
 .input-trailing-btn:hover { color: var(--text-primary); }
 .input-trailing-icon { width: 16px; height: 16px; }
 .form-hint {
   font-size: 12px;
   font-weight: 500;
+  margin-top: 2px;
 }
 .form-hint.ok  { color: var(--accent-secondary); }
 .form-hint.bad { color: var(--accent-danger); }
@@ -277,6 +292,7 @@
 .confirm-email {
   color: var(--text-primary);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .confirm-hint {
@@ -302,6 +318,33 @@
   cursor: pointer;
   padding: 0;
   text-decoration: underline;
+}
+
+/* Very short landscape phones: let the card scroll instead of clipping.
+   With align-items:center a card taller than the viewport overflows
+   *above* the container and becomes unreachable — switch to flex-start
+   and allow vertical scrolling. */
+@media (max-height: 560px) {
+  .auth-container {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding-top: 20px;
+  }
+  .auth-header { margin-bottom: 20px; }
+  .auth-logo { margin-bottom: 16px; }
+}
+
+/* ── Small screens ─────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .auth-container { padding: 16px 16px 32px; }
+  .auth-card { padding: 28px 20px; }
+  .auth-title { font-size: 21px; }
+  .auth-form { gap: 16px; }
+  .form-input { font-size: 16px; padding: 12px 14px; }
+  .input-icon-wrap .form-input { padding-right: 44px; }
+  .input-icon { left: 12px; }
+  .auth-button { padding: 13px; font-size: 14px; }
+  .auth-footer { margin-top: 24px; }
 }
 
 .confirm-resend-btn:hover {

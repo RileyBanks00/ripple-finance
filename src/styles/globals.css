@@ -172,6 +172,23 @@ button { cursor: pointer; border: none; outline: none; font-family: inherit; }
   padding: 0 var(--space-lg);
 }
 
+/* Shared page header — used by Dashboard/Portfolio/Invest/Transactions/Deposit.
+   Lives here (not in a page CSS file) so every page styles correctly
+   regardless of which CSS file it imports. */
+.page-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.page-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+@media (max-width: 600px) {
+  .page-title { font-size: 21px; }
+}
+
 .glass-card {
   background: var(--bg-glass);
   backdrop-filter: blur(20px);

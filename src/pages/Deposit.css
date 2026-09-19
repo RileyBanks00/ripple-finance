@@ -71,6 +71,20 @@
 .deposit-coin-network { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
 /* QR */
+.deposit-qr-wrap {
+  display: flex;              /* flex child centers via margin auto */
+  justify-content: center;
+  background: #fff;
+  padding: 16px;
+  border-radius: 16px;
+  width: fit-content;
+  margin: 24px auto;          /* actually centers (inline-flex + margin:auto doesn't) */
+  max-width: 100%;
+}
+@media (max-width: 360px) {
+  .deposit-qr-wrap { padding: 10px; }
+  .deposit-qr-wrap svg { width: 150px; height: 150px; }
+}
 .qr-box {
   width: 200px; height: 200px; margin: 0 auto;
   background: #fff; border-radius: 16px;
@@ -118,6 +132,40 @@
 
 /* Warnings */
 .deposit-warnings { display: flex; flex-direction: column; gap: 10px; }
+
+/* Pending address request */
+.deposit-request-pending {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-top: 20px; padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: rgba(245, 166, 35, 0.08);
+  border: 1px solid rgba(245, 166, 35, 0.25);
+  text-align: left;
+}
+.deposit-request-pending .pending-icon {
+  width: 22px; height: 22px; flex-shrink: 0;
+  color: var(--accent-gold);
+  margin-top: 2px;
+  animation: pending-pulse 2s ease-in-out infinite;
+}
+@keyframes pending-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+.deposit-request-pending strong {
+  display: block; font-size: 14px;
+  color: var(--accent-gold); margin-bottom: 4px;
+}
+.deposit-request-pending p {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+}
+.deposit-request-error {
+  margin-top: 12px; font-size: 13px;
+  color: var(--accent-danger);
+}
+@media (max-width: 600px) {
+  .deposit-request-pending { flex-direction: column; gap: 8px; }
+}
 .deposit-warn {
   display: flex; gap: 12px; align-items: flex-start;
   padding: 12px 16px; border-radius: var(--radius-md);
@@ -190,7 +238,6 @@
 @media (max-width: 600px) {
   .coin-selector { gap: 8px; }
   .coin-btn { padding: 8px 14px; }
-  .page-title { font-size: 21px; }
   .deposit-coin-header { flex-wrap: wrap; }
   .deposit-addr-row {
     flex-direction: column; align-items: stretch;

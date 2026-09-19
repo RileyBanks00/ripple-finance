@@ -226,7 +226,7 @@ export function usePortfolioHistory() {
   return { data, loading };
 }
 
-// Fetch user's assigned deposit addresses
+// Fetch user's assigned deposit addresses (realtime — admin assignment shows up instantly)
 export function useDepositAddresses() {
   const { user } = useAuth();
   const [data, setData] = useState([]);
@@ -234,7 +234,7 @@ export function useDepositAddresses() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     const fetchAddresses = async () => {
       const { data: addrs } = await supabase
         .from('deposit_addresses')
@@ -248,6 +248,48 @@ export function useDepositAddresses() {
     };
 
     fetchAddresses();
+
+    const channel = supabase
+      .channel('deposit_addresses_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'deposit_addresses', filter: `user_id=eq.${user.id}` }, fetchAddresses)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [user]);
+
+  return { data, loading };
+}
+
+// Fetch user's address requests (e.g. "Request USDT address" -> pending)
+export function useAddressRequests() {
+  const { user } = useAuth();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = true;
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchRequests = async () => {
+      const { data: reqs } = await supabase
+        .from('address_requests')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (reqs) {
+        setData(reqs);
+      }
+      setLoading(false);
+    };
+
+    fetchRequests();
+
+    const channel = supabase
+      .channel('address_requests_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'address_requests', filter: `user_id=eq.${user.id}` }, fetchRequests)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
   }, [user]);
 
   return { data, loading };

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { useCryptoPrices } from '../hooks/useCryptoPrices';
-import { useDepositAddresses } from '../hooks/useSupabase';
+import { useDepositAddresses, useAddressRequests } from '../hooks/useSupabase';
+import { supabase } from '../lib/supabase';
 import DataIcon from '../components/DataIcon';
 import {
   ExclamationTriangleIcon,
@@ -10,6 +11,7 @@ import {
   BoltIcon,
   ClipboardDocumentIcon,
   CheckIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline';
 import './Deposit.css';
 
@@ -23,10 +25,17 @@ const SUPPORTED_COINS = [
 
 export default function Deposit() {
   const { data: dbAddresses, loading } = useDepositAddresses();
+  const { data: addressRequests } = useAddressRequests();
   const { prices } = useCryptoPrices();
   const [selectedCoin, setSelectedCoin] = useState(SUPPORTED_COINS[0]);
   const [copied, setCopied] = useState(false);
   const [amount, setAmount] = useState('');
+  const [requesting, setRequesting] = useState(false);
+  const [requestError, setRequestError] = useState('');
+
+  const hasPendingRequest = addressRequests.some(
+    r => r.asset === selectedCoin.coin && r.status === 'pending'
+  );
 
   // Find user's specific address for the selected coin
   const userAddress = dbAddresses.find(a => a.asset === selectedCoin.coin);
@@ -34,15 +43,6 @@ export default function Deposit() {
   const priceRow = prices.find(p => p.coin === selectedCoin.coin);
   const price = priceRow?.price ?? 0;
   const cryptoEquiv = amount && price > 0 ? (parseFloat(amount) / price).toFixed(6) : '';
-
-
-
-  function handleCopy() {
-    if (!userAddress) return;
-    navigator.clipboard.writeText(userAddress.address).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
 
   const isAvailable = selectedCoin.coin === 'BTC' || selectedCoin.coin === 'USDT';
 
@@ -52,6 +52,33 @@ export default function Deposit() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+
+  // User asks for a deposit address → writes a 'pending' row via RPC.
+  // An admin assigns the real address from Supabase; realtime then
+  // swaps this pending card for the address + QR automatically.
+  async function handleRequestAddress() {
+    if (requesting || hasPendingRequest) return;
+    setRequesting(true);
+    setRequestError('');
+
+    const { error: rpcError } = await supabase.rpc('request_deposit_address', {
+      p_asset: selectedCoin.coin,
+    });
+
+    if (rpcError) {
+      setRequestError(
+        rpcError.message.includes('duplicate key')
+          ? 'You already have a pending request for this asset.'
+          : 'Could not submit your request. Please try again.'
+      );
+    }
+    setRequesting(false);
+  }
+
+  // Clear any stale request error when switching coins
+  useEffect(() => {
+    setRequestError('');
+  }, [selectedCoin.coin]);
 
   return (
     <div className="deposit-page">
@@ -101,7 +128,7 @@ export default function Deposit() {
             </div>
           ) : userAddress ? (
             <>
-              <div style={{ background: 'white', padding: '16px', borderRadius: '12px', display: 'inline-flex', margin: '32px auto' }}>
+              <div className="deposit-qr-wrap">
                 <QRCode value={userAddress.address} size={180} />
               </div>
               
@@ -131,9 +158,35 @@ export default function Deposit() {
               <DataIcon name={selectedCoin.icon} className="deposit-no-addr-icon data-icon" style={{ color: selectedCoin.color }} />
               <h3>Address Not Assigned</h3>
               <p>You don't have a personal <strong>{selectedCoin.coin}</strong> deposit address yet.</p>
-              <button className="btn-primary" style={{ marginTop: 16, background: selectedCoin.color }}>
-                Request {selectedCoin.coin} Address
-              </button>
+
+              {hasPendingRequest ? (
+                <div className="deposit-request-pending">
+                  <ClockIcon className="pending-icon" />
+                  <div>
+                    <strong>Request pending</strong>
+                    <p>
+                      Your {selectedCoin.coin} address request is being reviewed.
+                      It will appear here automatically once approved.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="btn-primary"
+                  style={{ marginTop: 16, background: selectedCoin.color }}
+                  onClick={handleRequestAddress}
+                  disabled={requesting}
+                  id="request-addr-btn"
+                >
+                  {requesting
+                    ? 'Submitting request...'
+                    : `Request ${selectedCoin.coin} Address`}
+                </button>
+              )}
+
+              {requestError && (
+                <p className="deposit-request-error">{requestError}</p>
+              )}
             </div>
           )}
         </div>

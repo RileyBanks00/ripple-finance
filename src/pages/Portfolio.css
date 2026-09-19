@@ -105,5 +105,4 @@
 }
 @media (max-width: 420px) {
   .port-summary-cards { grid-template-columns: 1fr; }
-  .page-title { font-size: 21px; }
 }
