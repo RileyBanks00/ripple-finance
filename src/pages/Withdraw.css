@@ -1,0 +1,108 @@
+/* ─────────────────────────────────────────────
+   WITHDRAW — instant send + gas fee modal
+   ───────────────────────────────────────────── */
+
+.withdraw-page { display: flex; flex-direction: column; gap: 20px; max-width: 560px; margin: 0 auto; }
+
+/* Result banner */
+.withdraw-result {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 16px; border-radius: var(--radius-md);
+  font-size: 13.5px; line-height: 1.5; overflow-wrap: anywhere;
+}
+.withdraw-result .result-icon { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
+.withdraw-result.ok  { background: rgba(16, 217, 168, 0.08); border: 1px solid rgba(16, 217, 168, 0.25); color: var(--accent-secondary); }
+.withdraw-result.bad { background: rgba(244, 63, 94, 0.08);  border: 1px solid rgba(244, 63, 94, 0.25);  color: var(--accent-danger); }
+
+/* Card */
+.withdraw-card { display: flex; flex-direction: column; gap: 16px; padding: 24px; }
+
+.coin-selector { display: flex; gap: 8px; }
+.coin-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 16px; font-size: 13px; font-weight: 600;
+  border-radius: var(--radius-full);
+  background: var(--bg-inset); border: 1px solid var(--border);
+  color: var(--text-secondary); transition: all 0.15s ease;
+}
+.coin-btn.active { border-color: var(--accent-primary); color: var(--text-primary); background: rgba(139, 92, 246, 0.12); }
+.coin-btn-icon { width: 16px; height: 16px; }
+
+.withdraw-amounts {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 16px; border-radius: var(--radius-md);
+  background: var(--bg-glass); border: 1px solid var(--border);
+}
+.withdraw-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.withdraw-label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
+.withdraw-value { font-size: 14px; font-weight: 700; font-family: var(--font-display); }
+.withdraw-value.dim, .confirm-row .dim { color: var(--text-secondary); font-weight: 500; }
+
+.withdraw-form { display: flex; flex-direction: column; gap: 8px; }
+.withdraw-form .form-hint { margin-top: -2px; }
+
+.withdraw-error {
+  font-size: 13px; color: var(--accent-danger);
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  background: rgba(244, 63, 94, 0.08);
+  overflow-wrap: anywhere;
+}
+
+.withdraw-send { justify-content: center; border-radius: var(--radius-md); }
+.send-icon { width: 18px; height: 18px; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(5, 4, 10, 0.6);
+  backdrop-filter: blur(4px);
+  animation: fadeIn var(--duration-fast) ease both;
+}
+.withdraw-modal {
+  width: 100%; max-width: 420px; max-height: 90dvh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeInUp var(--duration-md) var(--ease-out) both;
+}
+.withdraw-modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+
+.confirm-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13.5px; }
+.confirm-row > span:first-child { color: var(--text-muted); }
+.confirm-row strong { overflow-wrap: anywhere; text-align: right; }
+.confirm-addr {
+  font-size: 11.5px; color: var(--text-secondary);
+  background: var(--bg-inset); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 4px 8px;
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Gas fee notice */
+.gas-notice {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px; margin-top: 4px;
+  border-radius: var(--radius-md);
+  background: rgba(245, 166, 35, 0.07);
+  border: 1px solid rgba(245, 166, 35, 0.25);
+}
+.gas-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--accent-gold); margin-top: 2px; }
+.gas-notice strong { display: block; font-size: 13.5px; color: var(--accent-gold); margin-bottom: 2px; }
+.gas-notice p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+.gas-notice p strong { display: inline; color: var(--text-primary); }
+
+.modal-2btns { display: flex; gap: 10px; margin-top: 8px; }
+.modal-2btns .btn-primary, .modal-2btns .btn-secondary { flex: 1; justify-content: center; padding: 12px; font-size: 14px; }
+
+@media (max-width: 480px) {
+  .withdraw-card { padding: 18px; }
+  .coin-selector { flex-wrap: wrap; }
+  .confirm-addr { max-width: 150px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay, .withdraw-modal { animation: none; }
+}

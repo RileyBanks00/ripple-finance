@@ -5,6 +5,8 @@ import {
   BriefcaseIcon,
   ClipboardDocumentListIcon,
   ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  ShieldCheckIcon,
   ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +19,11 @@ const navItems = [
   { to: '/portfolio',    icon: BriefcaseIcon,     label: 'Portfolio' },
   { to: '/transactions', icon: ClipboardDocumentListIcon, label: 'Transactions' },
   { to: '/deposit',      icon: ArrowDownTrayIcon, label: 'Deposit' },
+  { to: '/withdraw',     icon: ArrowUpTrayIcon,   label: 'Withdraw' },
+];
+
+const adminNavItems = [
+  { to: '/admin',        icon: ShieldCheckIcon,   label: 'Admin' },
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -40,7 +47,7 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         <nav className="sidebar-nav">
-          {navItems.map(item => (
+          {navItems.concat(profile?.role === 'admin' ? adminNavItems : []).map(item => (
             <NavLink
               key={item.to}
               to={item.to}

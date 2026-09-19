@@ -1,0 +1,222 @@
+/* ─────────────────────────────────────────────
+   ADMIN PORTAL — table + slide-over drawer
+   ───────────────────────────────────────────── */
+
+.admin-page { display: flex; flex-direction: column; gap: 28px; max-width: 1100px; margin: 0 auto; }
+
+/* Toolbar */
+.admin-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px 0; }
+.admin-search {
+  position: relative; flex: 1; max-width: 360px;
+  display: flex; align-items: center;
+}
+.admin-search-icon { position: absolute; left: 12px; width: 16px; height: 16px; color: var(--text-muted); pointer-events: none; }
+.admin-search-input {
+  width: 100%;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px 10px 36px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+.admin-search-input:focus { outline: none; border-color: var(--accent-primary); }
+.admin-count { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+
+/* Table */
+.admin-table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-table th {
+  text-align: left; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 16px 24px 10px;
+  border-bottom: 1px solid var(--row-divider);
+}
+.admin-table td { padding: 14px 24px; border-bottom: 1px solid var(--row-divider); vertical-align: middle; }
+.admin-table th.num, .admin-table td.num { text-align: right; }
+.admin-row { cursor: pointer; transition: background 0.15s ease; }
+.admin-row:hover { background: var(--bg-glass-hover); }
+.admin-email { color: var(--text-secondary); font-size: 13px; }
+.admin-dim { color: var(--text-muted); font-size: 13px; }
+.admin-balance { font-weight: 600; font-family: var(--font-display); }
+.admin-empty { text-align: center; color: var(--text-muted); padding: 32px 16px !important; }
+
+.admin-user-cell { display: flex; align-items: center; gap: 12px; }
+.admin-avatar {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--gradient-primary);
+  color: #fff; font-weight: 700; font-size: 14px;
+}
+.admin-avatar.lg { width: 44px; height: 44px; font-size: 18px; }
+.admin-user-name { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+
+/* Pagination */
+.admin-pagination {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 16px; padding: 16px 24px;
+}
+.admin-page-info { font-size: 13px; color: var(--text-secondary); }
+.admin-page-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600;
+  background: var(--bg-glass); border: 1px solid var(--border);
+  border-radius: var(--radius-full); color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+.admin-page-btn:hover:not(:disabled) { border-color: var(--accent-primary); background: var(--bg-glass-hover); }
+.admin-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.admin-page-icon { width: 14px; height: 14px; }
+
+/* ── Drawer ─────────────────────────────────── */
+.drawer-overlay {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(5, 4, 10, 0.6);
+  backdrop-filter: blur(4px);
+  animation: fadeIn var(--duration-fast) ease both;
+}
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 91;
+  width: min(480px, 100vw);
+  display: flex; flex-direction: column;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  animation: drawerIn var(--duration-md) var(--ease-out) both;
+}
+@keyframes drawerIn {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--row-divider);
+}
+.drawer-id { display: flex; align-items: center; gap: 14px; }
+.drawer-name { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.drawer-email { font-size: 13px; color: var(--text-muted); overflow-wrap: anywhere; }
+.drawer-close {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+.drawer-close:hover { background: var(--bg-glass-hover); color: var(--text-primary); }
+.drawer-close-icon { width: 20px; height: 20px; }
+
+.drawer-tabs { display: flex; gap: 4px; padding: 12px 16px 0; border-bottom: 1px solid var(--row-divider); }
+.drawer-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 12px; font-size: 13px; font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+.drawer-tab:hover { color: var(--text-secondary); }
+.drawer-tab.active { color: var(--text-primary); border-bottom-color: var(--accent-primary); }
+.drawer-tab-icon { width: 15px; height: 15px; }
+
+.drawer-body { flex: 1; overflow-y: auto; padding: 20px 24px 32px; }
+.drawer-section { display: flex; flex-direction: column; gap: 14px; }
+.drawer-subtitle { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-top: 6px; }
+.drawer-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.admin-hint { font-size: 12.5px; color: var(--text-muted); margin-top: -8px; }
+.admin-msg { font-size: 13px; padding: 10px 12px; border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+.admin-msg.ok  { background: rgba(16, 217, 168, 0.1); color: var(--accent-secondary); }
+.admin-msg.bad { background: rgba(244, 63, 94, 0.1);  color: var(--accent-danger); }
+
+/* Balances tab */
+.balance-row {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px; border-radius: var(--radius-md);
+  background: var(--bg-glass); border: 1px solid var(--border);
+}
+.balance-info { display: flex; align-items: center; gap: 12px; }
+.balance-icon { width: 26px; height: 26px; }
+.balance-info > div { display: flex; flex-direction: column; }
+.balance-asset { font-weight: 700; font-size: 14px; }
+.balance-amount { font-size: 13px; color: var(--text-secondary); font-family: var(--font-display); }
+.balance-actions { display: flex; gap: 8px; }
+.balance-btn {
+  padding: 7px 14px; font-size: 12.5px; font-weight: 600;
+  border-radius: var(--radius-full);
+  background: var(--bg-inset); border: 1px solid var(--border);
+  color: var(--text-secondary);
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: all 0.15s ease;
+}
+.balance-btn:hover:not(:disabled) { border-color: var(--accent-primary); color: var(--text-primary); }
+.balance-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.balance-btn.on { border-color: var(--accent-primary); color: var(--text-primary); background: rgba(139, 92, 246, 0.12); }
+.balance-btn.credit:hover:not(:disabled), .balance-btn.credit.on { border-color: var(--accent-secondary); color: var(--accent-secondary); }
+.balance-btn.debit:hover:not(:disabled) { border-color: var(--accent-danger); color: var(--accent-danger); }
+.btn-tiny-icon { width: 13px; height: 13px; }
+
+.balance-form { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+.balance-input { padding: 10px 12px; font-size: 14px; }
+.balance-apply { padding: 10px; font-size: 14px; justify-content: center; border-radius: var(--radius-md); }
+
+/* Address tab */
+.pending-requests, .assign-form { display: flex; flex-direction: column; gap: 10px; }
+.pending-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 14px; border-radius: var(--radius-md);
+  background: rgba(245, 166, 35, 0.06); border: 1px solid rgba(245, 166, 35, 0.2);
+}
+.pending-actions { display: flex; gap: 8px; }
+.coin-selector { display: flex; gap: 8px; }
+.coin-btn {
+  padding: 8px 16px; font-size: 13px; font-weight: 600;
+  border-radius: var(--radius-full);
+  background: var(--bg-inset); border: 1px solid var(--border);
+  color: var(--text-secondary); transition: all 0.15s ease;
+}
+.coin-btn.active { border-color: var(--accent-primary); color: var(--text-primary); background: rgba(139, 92, 246, 0.12); }
+.assign-submit { padding: 11px; font-size: 14px; justify-content: center; border-radius: var(--radius-md); }
+.current-addr { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.addr-code {
+  font-size: 12px; color: var(--text-secondary);
+  background: var(--bg-inset); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 4px 8px;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Transactions tab */
+.txn-row {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 14px; border-radius: var(--radius-md);
+  background: var(--bg-glass); border: 1px solid var(--border);
+}
+.txn-main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.txn-type { font-size: 13px; font-weight: 600; text-transform: capitalize; }
+.txn-amount { font-size: 13px; color: var(--text-secondary); font-family: var(--font-display); }
+.txn-meta { display: flex; flex-direction: column; gap: 2px; }
+.txn-ref { font-size: 11.5px; color: var(--text-muted); overflow-wrap: anywhere; }
+.txn-actions { display: flex; gap: 8px; padding-top: 2px; }
+
+/* Settings tab */
+.fee-row { display: flex; align-items: center; gap: 8px; }
+.fee-prefix { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--accent-gold); }
+.fee-input { max-width: 140px; }
+.fee-save { padding: 11px 22px; font-size: 14px; border-radius: var(--radius-md); }
+.status-row { display: flex; align-items: center; gap: 14px; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  .admin-toolbar { flex-wrap: wrap; padding: 16px 16px 0; }
+  .admin-table th, .admin-table td { padding: 12px 16px; }
+  .admin-pagination { justify-content: center; }
+  .drawer { width: 100vw; }
+  .drawer-tabs { overflow-x: auto; }
+  .drawer-tab span { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer, .drawer-overlay { animation: none; }
+}

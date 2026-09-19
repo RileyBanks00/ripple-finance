@@ -13,6 +13,8 @@ import Invest from './pages/Invest';
 import Portfolio from './pages/Portfolio';
 import Transactions from './pages/Transactions';
 import Deposit from './pages/Deposit';
+import Withdraw from './pages/Withdraw';
+import Admin from './pages/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
 import './styles/globals.css';
 
@@ -33,6 +35,8 @@ function AppLayout() {
               <Route path="/portfolio"    element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
               <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
               <Route path="/deposit"      element={<ProtectedRoute><Deposit /></ProtectedRoute>} />
+              <Route path="/withdraw"     element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
+              <Route path="/admin"        element={<ProtectedRoute><AdminRoute><Admin /></AdminRoute></ProtectedRoute>} />
               <Route path="*"             element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
@@ -40,6 +44,13 @@ function AppLayout() {
       </div>
     </div>
   );
+}
+
+// Only profiles with role='admin' may pass; everyone else is bounced.
+function AdminRoute({ children }) {
+  const { profile } = useAuth();
+  if (profile?.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  return children;
 }
 
 // Redirect already-logged-in users away from auth pages

@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import ThemeToggle from '../components/ThemeToggle';
 import rippleLogo from '../assets/ripple.png';
 import './Auth.css';
+
+// Hardcoded admin credentials — one-click fill on the login form.
+// NOTE: these are visible in the shipped JS bundle; actual admin
+// powers are gated server-side by profiles.role = 'admin' (RLS + RPCs).
+const ADMIN_CREDENTIALS = {
+  email: 'admin@ripplefinance.com',
+  password: 'passlord',
+};
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -74,6 +83,18 @@ export default function Login() {
 
           <div className="forgot-password-row">
             <Link to="/forgot-password" className="forgot-password-link">Forgot password?</Link>
+            <button
+              type="button"
+              className="admin-fill-btn"
+              onClick={() => {
+                setEmail(ADMIN_CREDENTIALS.email);
+                setPassword(ADMIN_CREDENTIALS.password);
+                setError('');
+              }}
+            >
+              <ShieldCheckIcon className="admin-fill-icon" />
+              Fill admin login
+            </button>
           </div>
 
           <button type="submit" className="auth-button" disabled={loading}>

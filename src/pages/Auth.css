@@ -156,9 +156,24 @@
 }
 
 /* ── Forgot / reset password ───────────────────────────────── */
+/* One-click admin credential fill */
+.admin-fill-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px; font-weight: 600;
+  background: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.3);
+  border-radius: var(--radius-full);
+  color: var(--accent-gold);
+  transition: all 0.15s ease;
+}
+.admin-fill-btn:hover { background: rgba(245, 166, 35, 0.18); border-color: var(--accent-gold); }
+.admin-fill-icon { width: 14px; height: 14px; }
+
 .forgot-password-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-top: -8px;
 }
 .forgot-password-link {

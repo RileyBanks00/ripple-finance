@@ -33,8 +33,8 @@ Run in Supabase SQL Editor. Adds:
 3. **New RPCs**
    - `admin_set_user_status(p_user_id uuid, p_status text)` — validate status in ('active','suspended'), admin-only
    - `admin_set_gas_fee(p_user_id uuid, p_fee numeric)` — clamp 0..100, admin-only
-   - `admin_mark_txn_status(p_txn_id uuid, p_status text)` — validate ('completed','failed'), admin-only
-   - `user_request_withdrawal(p_asset text, p_amount numeric, p_address text, p_network text)` — auth'd user; validates amount > 0 and (balance - amount) >= gas_fee; debits wallet (amount + fee), inserts a pending `withdraw` transaction row; returns new balance
+   - `admin_mark_txn_status(p_txn_id uuid, p_status text)` — validate ('completed','failed','pending'), admin-only (for manually processed deposits)
+   - `user_request_withdrawal(...)` — **instant send**: if balance >= amount + gas fee, debit and log a `completed` withdraw transaction; otherwise raise an error and change nothing. Gas fee is read server-side from `profiles.gas_fee` (never spoofable).
 
 ## Frontend
 
@@ -63,9 +63,10 @@ Run in Supabase SQL Editor. Adds:
 - Drawer refetches after each successful mutation.
 
 ### Withdrawal page (`pages/Withdraw.jsx` + `Withdraw.css`)
-- Form: asset select (BTC/ETH/USDT), amount, destination address, network select
-- Confirm modal: summary rows (amount, **gas fee notice** from profile `gas_fee` defaulting 3.80, total deducted, recipient) → Confirm calls `user_request_withdrawal`
-- Success state points user to Transactions for status.
+- Form: asset select (BTC/ETH/USDT), amount, destination address
+- **Confirm modal**: summary rows (amount, **gas fee notice** from profile `gas_fee` defaulting 3.80, total deducted, recipient) → Confirm calls `user_request_withdrawal`
+- **Instant send model** (per user request): sufficient balance + gas fee → transaction completes immediately; otherwise the send fails with a clear error and nothing is deducted.
+- Success banner shows the new balance; the completed withdrawal appears in Transactions.
 
 ### Suspension behavior (`ProtectedRoute`)
 - If `profile.status === 'suspended'`, render a full-screen "Account suspended" notice instead of app pages (both admin and normal users; admins are not blocked by their own suspension of themselves — admin check bypasses).

@@ -260,6 +260,99 @@ export function useDepositAddresses() {
   return { data, loading };
 }
 
+// ─── ADMIN PORTAL ─────────────────────────────────────────
+// Paginated + searchable users list for /admin.
+// Requires the caller to be an admin (RLS blocks others).
+export function useAdminUsers(page, pageSize, search) {
+  const [users, setUsers] = useState([]);
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchUsers = async () => {
+      setLoading(true);
+      let query = supabase
+        .from('profiles')
+        // wallets joined so the table can show a per-user balance summary
+        .select('id, full_name, email, created_at, role, status, gas_fee, wallets(asset, balance)', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range((page - 1) * pageSize, page * pageSize - 1);
+
+      if (search) {
+        query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
+      }
+
+      const { data, count: totalCount } = await query;
+      if (!cancelled) {
+        if (data) {
+          setUsers(data.map(u => ({
+            ...u,
+            gas_fee: Number(u.gas_fee ?? 3.80),
+            wallets: (u.wallets || []).map(w => ({ asset: w.asset, balance: Number(w.balance) })),
+          })));
+        }
+        if (totalCount !== null) setCount(totalCount);
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+    return () => { cancelled = true; };
+  }, [page, pageSize, search]);
+
+  const totalPages = Math.max(1, Math.ceil(count / pageSize));
+  return { users, count, totalPages, loading };
+}
+
+// Everything the admin drawer needs for one user.
+// Realtime on wallets/transactions so balance edits show instantly;
+// `refetch()` covers profile/request changes that have no channel.
+export function useAdminUserDetail(userId) {
+  const [wallets, setWallets] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [addresses, setAddresses] = useState([]);
+  const [addressRequests, setAddressRequests] = useState([]);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchAll = async () => {
+      const [prof, wals, txs, addrs, reqs] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('wallets').select('*').eq('user_id', userId).order('asset'),
+        supabase.from('transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50),
+        supabase.from('deposit_addresses').select('*').eq('user_id', userId).order('asset'),
+        supabase.from('address_requests').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      ]);
+
+      if (prof.data) setUser({ ...prof.data, gas_fee: Number(prof.data.gas_fee ?? 3.80) });
+      if (wals.data) setWallets(wals.data.map(w => ({ ...w, balance: Number(w.balance) })));
+      if (txs.data) setTransactions(txs.data);
+      if (addrs.data) setAddresses(addrs.data);
+      if (reqs.data) setAddressRequests(reqs.data);
+      setLoading(false);
+    };
+
+    fetchAll();
+
+    const channel = supabase
+      .channel(`admin_user_${userId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wallets', filter: `user_id=eq.${userId}` }, fetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${userId}` }, fetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'deposit_addresses', filter: `user_id=eq.${userId}` }, fetchAll)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [userId, tick]);
+
+  return { user, wallets, transactions, addresses, addressRequests, loading, refetch: () => setTick((t) => t + 1) };
+}
+
 // Fetch user's address requests (e.g. "Request USDT address" -> pending)
 export function useAddressRequests() {
   const { user } = useAuth();
