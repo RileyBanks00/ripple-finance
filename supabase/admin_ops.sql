@@ -61,6 +61,9 @@ begin
     raise exception 'Amount must be positive';
   end if;
 
+  -- Tell wallet triggers to skip this ledger insert (prevents double-credit)
+  perform set_config('app.from_admin_rpc', 'on', true);
+
   insert into public.wallets (user_id, asset, balance)
   values (p_user_id, upper(p_asset), p_amount)
   on conflict (user_id, asset)
@@ -99,6 +102,8 @@ begin
     raise exception 'Amount must be positive';
   end if;
 
+  perform set_config('app.from_admin_rpc', 'on', true);
+
   insert into public.wallets (user_id, asset, balance)
   values (p_user_id, upper(p_asset), -p_amount)
   on conflict (user_id, asset)
@@ -135,6 +140,8 @@ begin
   if p_balance is null or p_balance < 0 then
     raise exception 'Balance must be zero or positive';
   end if;
+
+  perform set_config('app.from_admin_rpc', 'on', true);
 
   insert into public.wallets (user_id, asset, balance)
   values (p_user_id, upper(p_asset), p_balance)

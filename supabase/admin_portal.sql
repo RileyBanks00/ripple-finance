@@ -125,22 +125,26 @@ begin
 end;
 $$;
 
--- ─── 4. USER WITHDRAWAL (INSTANT SEND) ──────────────────────
+-- ─── 4. USER WITHDRAWAL (INSTANT SEND, GAS PAID IN ETH) ─────
 -- Sending to another wallet works immediately:
---   balance >= amount + gas fee  -> wallet debited, 'completed' txn
---   otherwise                    -> error raised, nothing changes
--- The gas fee is read server-side from profiles.gas_fee.
+--   ETH balance >= gas fee AND asset balance >= amount
+--     -> asset wallet debited by amount, ETH wallet debited by fee,
+--        'completed' withdraw txn for the asset + separate 'gas' txn
+--   otherwise -> error raised, nothing changes
+-- The gas fee is set by the admin in USD (profiles.gas_fee) and charged
+-- in ETH at the current ETH/USD price.
 --
--- p_price_usd    : current price of the asset in USD (client-provided
---                  from live prices; the fee itself is never spoofable)
+-- p_price_usd    : current price of p_asset in USD (client-provided)
+-- p_eth_price_usd: current price of ETH in USD (client-provided)
 -- p_amount_usd   : USD value of the withdrawal (for ledger display)
 create or replace function public.user_request_withdrawal(
-  p_asset      text,
-  p_amount     numeric,
-  p_address    text,
-  p_network    text,
-  p_price_usd  numeric,
-  p_amount_usd numeric default null
+  p_asset         text,
+  p_amount        numeric,
+  p_address       text,
+  p_network       text,
+  p_price_usd     numeric,
+  p_eth_price_usd numeric,
+  p_amount_usd    numeric default null
 )
 returns numeric
 language plpgsql security definer
@@ -149,9 +153,9 @@ as $$
 declare
   v_uid        uuid := auth.uid();
   v_balance    numeric;
+  v_eth_bal    numeric;
   v_gas_usd    numeric;
-  v_fee_crypto numeric;
-  v_total      numeric;
+  v_fee_eth    numeric;
 begin
   if v_uid is null then
     raise exception 'Not authenticated';
@@ -171,39 +175,76 @@ begin
   if p_price_usd is null or p_price_usd <= 0 then
     raise exception 'Could not determine asset price. Try again.';
   end if;
+  if p_eth_price_usd is null or p_eth_price_usd <= 0 then
+    raise exception 'Could not determine ETH price. Try again.';
+  end if;
+
+  -- The RPC updates wallets itself; stop the transaction trigger from
+  -- applying the ledger rows a second time.
+  perform set_config('app.from_admin_rpc', 'on', true);
 
   -- Gas fee always comes from the user's profile (server-side, not spoofable)
   select gas_fee into v_gas_usd from public.profiles where id = v_uid;
-  v_gas_usd    := coalesce(v_gas_usd, 3.80);
-  v_fee_crypto := v_gas_usd / p_price_usd;
-  v_total      := p_amount + v_fee_crypto;
+  v_gas_usd := coalesce(v_gas_usd, 3.80);
+  v_fee_eth := v_gas_usd / p_eth_price_usd;
 
-  -- Lock the wallet row, check balance
+  -- Lock both wallet rows (asset being sent + ETH for gas)
   select balance into v_balance
     from public.wallets
    where user_id = v_uid and asset = upper(p_asset)
    for update;
 
-  if v_balance is null then
-    raise exception 'You have no % balance to withdraw', upper(p_asset);
-  end if;
-  if v_balance < v_total then
-    raise exception 'Insufficient balance: need % % (incl. gas fee), have %',
-      round(v_total, 8), upper(p_asset), round(v_balance, 8);
+  select balance into v_eth_bal
+    from public.wallets
+   where user_id = v_uid and asset = 'ETH'
+   for update;
+
+  if upper(p_asset) = 'ETH' then
+    -- Sending ETH: amount + fee both come out of the same wallet
+    if v_balance is null then
+      raise exception 'You have no ETH balance to withdraw';
+    end if;
+    if v_balance < p_amount + v_fee_eth then
+      raise exception 'Insufficient ETH: need % (amount + gas), have %',
+        round(p_amount + v_fee_eth, 8), round(v_balance, 8);
+    end if;
+    update public.wallets
+       set balance = balance - (p_amount + v_fee_eth), updated_at = now()
+     where user_id = v_uid and asset = 'ETH'
+     returning balance into v_balance;
+  else
+    -- Sending BTC/USDT/...: need the amount, plus a separate ETH balance for gas
+    if v_balance is null or v_balance < p_amount then
+      raise exception 'Insufficient % balance', upper(p_asset);
+    end if;
+    if v_eth_bal is null or v_eth_bal < v_fee_eth then
+      raise exception 'Not enough ETH for gas: need % ETH ($% fee), have %',
+        round(v_fee_eth, 8), round(v_gas_usd, 2), coalesce(round(v_eth_bal, 8), 0);
+    end if;
+
+    update public.wallets
+       set balance = balance - p_amount, updated_at = now()
+     where user_id = v_uid and asset = upper(p_asset)
+     returning balance into v_balance;
+
+    update public.wallets
+       set balance = balance - v_fee_eth, updated_at = now()
+     where user_id = v_uid and asset = 'ETH';
   end if;
 
-  update public.wallets
-     set balance = balance - v_total, updated_at = now()
-   where user_id = v_uid and asset = upper(p_asset)
-   returning balance into v_balance;
-
-  -- Completed ledger entry; destination kept in reference
+  -- Completed ledger entries; destination kept in reference
   insert into public.transactions
     (user_id, type, asset, amount_crypto, amount_usd, status, reference)
   values
     (v_uid, 'withdraw', upper(p_asset), p_amount,
      coalesce(p_amount_usd, p_amount * p_price_usd), 'completed',
      trim(p_address) || ' • network: ' || p_network);
+
+  insert into public.transactions
+    (user_id, type, asset, amount_crypto, amount_usd, status, reference)
+  values
+    (v_uid, 'fee', 'ETH', v_fee_eth, v_gas_usd, 'completed',
+     'Network gas fee for ' || upper(p_asset) || ' withdrawal');
 
   return v_balance;
 end;

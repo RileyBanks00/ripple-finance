@@ -37,6 +37,18 @@
 .withdraw-label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
 .withdraw-value { font-size: 14px; font-weight: 700; font-family: var(--font-display); }
 .withdraw-value.dim, .confirm-row .dim { color: var(--text-secondary); font-weight: 500; }
+.withdraw-value.gas-low { color: var(--accent-danger); }
+
+/* ETH deposit nudge inside the confirm modal */
+.eth-deposit-nudge {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; border-radius: var(--radius-md);
+  background: rgba(56, 189, 248, 0.07);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+.eth-deposit-nudge p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+.eth-deposit-nudge strong { color: var(--accent-blue); }
+.eth-deposit-btn { padding: 9px 18px; font-size: 13px; white-space: nowrap; }
 
 .withdraw-form { display: flex; flex-direction: column; gap: 8px; }
 .withdraw-form .form-hint { margin-top: -2px; }

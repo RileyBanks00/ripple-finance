@@ -9,6 +9,13 @@ returns trigger as $$
 declare
   amount_change numeric;
 begin
+  -- Admin RPCs (admin_credit_wallet etc.) already update wallets themselves
+  -- and only insert the ledger row — skip the trigger for those, or the
+  -- amount gets applied twice (e.g. credit 1 BTC -> wallet +2 BTC).
+  if coalesce(current_setting('app.from_admin_rpc', true), '') = 'on' then
+    return new;
+  end if;
+
   -- Only affect balance if the transaction is completed
   if new.status = 'completed' then
     
@@ -47,6 +54,11 @@ returns trigger as $$
 declare
   amount_change numeric;
 begin
+  -- Same double-apply guard as above for admin RPC ledger rows
+  if coalesce(current_setting('app.from_admin_rpc', true), '') = 'on' then
+    return new;
+  end if;
+
   -- If status just changed to 'completed'
   if old.status != 'completed' and new.status = 'completed' then
     

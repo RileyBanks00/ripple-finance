@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowsRightLeftIcon,
   ExclamationTriangleIcon,
@@ -22,6 +23,7 @@ const fmtUsd = (n) =>
   Number(n || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
 export default function Withdraw() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { data: wallets, loading } = useWallets();
   const { prices } = useCryptoPrices();
@@ -36,22 +38,31 @@ export default function Withdraw() {
 
   const wallet = wallets.find((w) => w.coin === selectedCoin.coin);
   const balance = wallet?.balance ?? 0;
+  const ethWallet = wallets.find((w) => w.coin === 'ETH');
+  const ethBalance = ethWallet?.balance ?? 0;
 
   const priceRow = prices.find((c) => c.coin === selectedCoin.coin);
   const price = priceRow?.price ?? 0;
+  const ethPrice = prices.find((c) => c.coin === 'ETH')?.price ?? 0;
   const gasFeeUsd = Number(profile?.gas_fee ?? 3.80);
-  const gasFeeCrypto = price > 0 ? gasFeeUsd / price : 0;
+  const gasFeeEth = ethPrice > 0 ? gasFeeUsd / ethPrice : 0;
   const amountNum = parseFloat(amount) || 0;
   const amountUsd = amountNum * price;
-  const totalCrypto = amountNum + gasFeeCrypto;
-  const enough = amountNum > 0 && balance >= totalCrypto;
+  const sendingEth = selectedCoin.coin === 'ETH';
+  const totalCrypto = sendingEth ? amountNum + gasFeeEth : amountNum;
+  const hasGas = ethBalance >= gasFeeEth && gasFeeEth > 0;
+  const enough = amountNum > 0 && balance >= totalCrypto && (sendingEth || hasGas);
+  const needsEthDeposit = amountNum > 0 && balance >= totalCrypto && !sendingEth && !hasGas;
 
   function validate() {
     if (!address.trim()) return 'Enter a destination wallet address.';
     if (address.trim().length < 10) return 'That wallet address looks too short.';
     if (amountNum <= 0) return 'Enter an amount greater than 0.';
-    if (!enough) {
-      return `Insufficient balance: you need ${totalCrypto.toFixed(6)} ${selectedCoin.coin} (amount + gas fee) but have ${balance.toFixed(6)}.`;
+    if (balance < totalCrypto) {
+      return `Insufficient ${selectedCoin.coin} balance: you need ${totalCrypto.toFixed(6)} but have ${balance.toFixed(6)}.`;
+    }
+    if (!sendingEth && !hasGas) {
+      return `You also need ${gasFeeEth.toFixed(6)} ETH for the $${gasFeeUsd.toFixed(2)} gas fee — deposit some ETH first.`;
     }
     return '';
   }
@@ -72,6 +83,7 @@ export default function Withdraw() {
       p_address: address.trim(),
       p_network: selectedCoin.network,
       p_price_usd: price,
+      p_eth_price_usd: ethPrice,
       p_amount_usd: amountUsd,
     });
 
@@ -83,7 +95,7 @@ export default function Withdraw() {
     } else {
       setResult({
         ok: true,
-        text: `Sent ${amountNum.toLocaleString('en-US', { maximumFractionDigits: 8 })} ${selectedCoin.coin} (− ${gasFeeCrypto.toFixed(6)} ${selectedCoin.coin} gas). New balance: ${Number(newBalance).toFixed(6)} ${selectedCoin.coin}.`,
+        text: `Sent ${amountNum.toLocaleString('en-US', { maximumFractionDigits: 8 })} ${selectedCoin.coin} — gas fee of $${gasFeeUsd.toFixed(2)} (${gasFeeEth.toFixed(6)} ETH) deducted. New ${selectedCoin.coin} balance: ${Number(newBalance).toFixed(6)}.`,
       });
       setAmount('');
       setAddress('');
@@ -138,6 +150,14 @@ export default function Withdraw() {
             <span className="withdraw-label">Network</span>
             <span className="withdraw-value dim">{selectedCoin.network}</span>
           </div>
+          {!sendingEth && (
+            <div className="withdraw-row">
+              <span className="withdraw-label">ETH available for gas</span>
+              <span className={`withdraw-value ${hasGas ? 'dim' : 'gas-low'}`}>
+                {ethBalance.toLocaleString('en-US', { maximumFractionDigits: 6 })} ETH
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Form */}
@@ -194,20 +214,40 @@ export default function Withdraw() {
               <code className="confirm-addr">{address.trim()}</code>
             </div>
 
-            {/* Gas fee notice */}
+            {/* Gas fee notice — fee is set in USD, charged in ETH */}
             <div className="gas-notice">
               <BoltIcon className="gas-icon" />
               <div>
-                <strong>Gas fee: {fmtUsd(gasFeeUsd)}</strong>
+                <strong>Gas fee: {fmtUsd(gasFeeUsd)} ≈ {gasFeeEth.toFixed(6)} ETH</strong>
                 <p>
-                  ≈ {gasFeeCrypto.toFixed(6)} {selectedCoin.coin} will be deducted on top of
-                  the amount. Total: <strong>{totalCrypto.toFixed(6)} {selectedCoin.coin}</strong>.
+                  Paid in ETH from your wallet
+                  {sendingEth
+                    ? <> together with the amount. Total: <strong>{totalCrypto.toFixed(6)} ETH</strong>.</>
+                    : <>. You need <strong>{gasFeeEth.toFixed(6)} ETH</strong> available for gas.</>}
                 </p>
               </div>
             </div>
 
+            {!sendingEth && !hasGas && (
+              <div className="eth-deposit-nudge">
+                <p>
+                  Your gas is paid in ETH and your balance is too low.
+                  Deposit about <strong>{(gasFeeEth * 1.2).toFixed(6)} ETH</strong> to cover it.
+                </p>
+                <button className="btn-secondary eth-deposit-btn" onClick={() => navigate('/deposit')}>
+                  Deposit ETH
+                </button>
+              </div>
+            )}
+
             {!enough && (
-              <p className="withdraw-error">Balance changed — not enough {selectedCoin.coin} for amount + gas fee.</p>
+              <p className="withdraw-error">
+                {sendingEth
+                  ? 'Balance changed — not enough ETH for amount + gas fee.'
+                  : !hasGas
+                    ? `You need ${gasFeeEth.toFixed(6)} ETH for gas.`
+                    : `Balance changed — not enough ${selectedCoin.coin}.`}
+              </p>
             )}
 
             <div className="modal-2btns">
