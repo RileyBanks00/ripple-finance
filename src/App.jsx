@@ -16,6 +16,7 @@ import Deposit from './pages/Deposit';
 import Withdraw from './pages/Withdraw';
 import Admin from './pages/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import './styles/globals.css';
 
 function AppLayout() {
@@ -29,16 +30,18 @@ function AppLayout() {
         <div className="app-main">
           <Navbar onMenuClick={() => setSidebarOpen(true)} />
           <main className="app-content">
-            <Routes>
-              <Route path="/dashboard"    element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/invest"       element={<ProtectedRoute><Invest /></ProtectedRoute>} />
-              <Route path="/portfolio"    element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
-              <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
-              <Route path="/deposit"      element={<ProtectedRoute><Deposit /></ProtectedRoute>} />
-              <Route path="/withdraw"     element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
-              <Route path="/admin"        element={<ProtectedRoute><AdminRoute><Admin /></AdminRoute></ProtectedRoute>} />
-              <Route path="*"             element={<Navigate to="/dashboard" replace />} />
-            </Routes>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/dashboard"    element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/invest"       element={<ProtectedRoute><Invest /></ProtectedRoute>} />
+                <Route path="/portfolio"    element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
+                <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+                <Route path="/deposit"      element={<ProtectedRoute><Deposit /></ProtectedRoute>} />
+                <Route path="/withdraw"     element={<ProtectedRoute><Withdraw /></ProtectedRoute>} />
+                <Route path="/admin"        element={<ProtectedRoute><AdminRoute><Admin /></AdminRoute></ProtectedRoute>} />
+                <Route path="*"             element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </ErrorBoundary>
           </main>
         </div>
       </div>

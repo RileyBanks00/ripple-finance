@@ -73,7 +73,7 @@ begin
 end;
 $$;
 
--- Per-user withdrawal gas fee (USD), clamped 0..100
+-- Per-user withdrawal gas fee (USD), no upper cap
 create or replace function public.admin_set_gas_fee(
   p_user_id uuid,
   p_fee     numeric
@@ -88,8 +88,8 @@ begin
   if not public.is_admin() then
     raise exception 'Not authorized: admin only';
   end if;
-  if p_fee is null or p_fee < 0 or p_fee > 100 then
-    raise exception 'Gas fee must be between 0 and 100';
+  if p_fee is null or p_fee < 0 then
+    raise exception 'Gas fee must be zero or positive';
   end if;
 
   v_fee := round(p_fee, 2);

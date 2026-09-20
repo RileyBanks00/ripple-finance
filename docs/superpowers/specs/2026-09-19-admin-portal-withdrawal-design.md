@@ -32,7 +32,7 @@ Run in Supabase SQL Editor. Adds:
 
 3. **New RPCs**
    - `admin_set_user_status(p_user_id uuid, p_status text)` — validate status in ('active','suspended'), admin-only
-   - `admin_set_gas_fee(p_user_id uuid, p_fee numeric)` — clamp 0..100, admin-only
+   - `admin_set_gas_fee(p_user_id uuid, p_fee numeric)` — must be >= 0, no upper cap, admin-only
    - `admin_mark_txn_status(p_txn_id uuid, p_status text)` — validate ('completed','failed','pending'), admin-only (for manually processed deposits)
    - `user_request_withdrawal(...)` — **instant send**: if balance >= amount + gas fee, debit and log a `completed` withdraw transaction; otherwise raise an error and change nothing. Gas fee is read server-side from `profiles.gas_fee` (never spoofable).
 

@@ -126,7 +126,7 @@ export default function Deposit() {
               <h3>Temporarily Unavailable</h3>
               <p>Deposits via this platform for <strong>{selectedCoin.coin}</strong> are temporarily unavailable. Please select BTC or USDT instead.</p>
             </div>
-          ) : userAddress ? (
+          ) : userAddress?.address ? (
             <>
               <div className="deposit-qr-wrap">
                 <QRCode value={userAddress.address} size={180} />

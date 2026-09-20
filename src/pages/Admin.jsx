@@ -508,8 +508,8 @@ function SettingsTab({ user, onChange }) {
 
   async function saveFee() {
     const v = Number(fee);
-    if (Number.isNaN(v) || v < 0 || v > 100) {
-      setMsg({ ok: false, text: 'Gas fee must be between 0 and 100' });
+    if (Number.isNaN(v) || v < 0) {
+      setMsg({ ok: false, text: 'Gas fee must be a positive number' });
       return;
     }
     setBusy(true);
@@ -558,7 +558,6 @@ function SettingsTab({ user, onChange }) {
           className="form-input fee-input"
           type="number"
           min="0"
-          max="100"
           step="0.01"
           value={fee}
           onChange={(e) => setFee(e.target.value)}
