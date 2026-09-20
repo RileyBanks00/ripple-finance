@@ -18,6 +18,9 @@ const CACHE_TTL = 60 * 1000; // 1 minute
 const REFRESH_INTERVAL = 60 * 1000; // poll once a minute
 const STALE_TTL = 24 * 60 * 60 * 1000; // keep cache up to 24h for offline fallback
 
+// Fiat units per 1 USD (EUR/GBP refreshed from CoinGecko alongside prices)
+const DEFAULT_FIAT_RATES = { USD: 1, EUR: 0.92, GBP: 0.79 };
+
 function readCache() {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
@@ -30,9 +33,9 @@ function readCache() {
   }
 }
 
-function writeCache(prices) {
+function writeCache(prices, fiatRates) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), prices }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), prices, fiatRates }));
   } catch {
     /* storage unavailable */
   }
@@ -56,6 +59,7 @@ export function useCryptoPrices({ refresh = true } = {}) {
     if (cached) return cached.prices.map(p => ({ ...p, source: 'cache' }));
     return buildMockPrices();
   });
+  const [fiatRates, setFiatRates] = useState(() => readCache()?.fiatRates || DEFAULT_FIAT_RATES);
   const [source, setSource] = useState(() => {
     const cached = readCache();
     if (cached && Date.now() - cached.ts < CACHE_TTL) return 'cache';
@@ -70,7 +74,7 @@ export function useCryptoPrices({ refresh = true } = {}) {
     inFlight.current = true;
     try {
       const ids = Object.values(COINGECKO_IDS).join(',');
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd,eur,gbp&include_24hr_change=true`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
       const json = await res.json();
@@ -87,10 +91,17 @@ export function useCryptoPrices({ refresh = true } = {}) {
         };
       });
 
+      // Derive fiat-per-USD from any coin that returned both currencies
+      const ref = Object.values(json).find(e => e?.usd && e?.eur);
+      const rates = ref
+        ? { USD: 1, EUR: ref.eur / ref.usd, GBP: (ref.gbp ?? ref.eur * DEFAULT_FIAT_RATES.GBP / DEFAULT_FIAT_RATES.EUR) / ref.usd }
+        : fiatRates;
+
       setPrices(live);
+      setFiatRates(rates);
       setSource('live');
       setError(null);
-      writeCache(live);
+      writeCache(live, rates);
     } catch (e) {
       // Keep whatever we had on screen; just surface the state
       setError(e.message || 'Failed to fetch prices');
@@ -120,7 +131,7 @@ export function useCryptoPrices({ refresh = true } = {}) {
 
   const manualRefresh = useCallback(() => fetchPrices(), [fetchPrices]);
 
-  return { prices, source, isLive: source === 'live', loading, error, refresh: manualRefresh };
+  return { prices, fiatRates, source, isLive: source === 'live', loading, error, refresh: manualRefresh };
 }
 
 const HISTORY_KEY = 'ripple-market-history-cache';

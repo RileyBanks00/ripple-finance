@@ -52,7 +52,6 @@ export default function Withdraw() {
   const totalCrypto = sendingEth ? amountNum + gasFeeEth : amountNum;
   const hasGas = ethBalance >= gasFeeEth && gasFeeEth > 0;
   const enough = amountNum > 0 && balance >= totalCrypto && (sendingEth || hasGas);
-  const needsEthDeposit = amountNum > 0 && balance >= totalCrypto && !sendingEth && !hasGas;
 
   function validate() {
     if (!address.trim()) return 'Enter a destination wallet address.';

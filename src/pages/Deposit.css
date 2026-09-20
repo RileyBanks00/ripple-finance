@@ -169,6 +169,17 @@
 .deposit-calc-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
 .calc-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
 .calc-field label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+.calc-field-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.calc-currency-pills { display: flex; gap: 4px; }
+.calc-pill {
+  padding: 4px 10px; border-radius: 999px;
+  background: var(--bg-glass); border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s;
+}
+.calc-pill:hover { color: var(--text-secondary); }
+.calc-pill.active { border-color: var(--accent-primary); color: var(--accent-primary); background: rgba(139, 92, 246, 0.1); }
+.calc-reverse { margin-bottom: 0; }
 .calc-input-wrap {
   display: flex; align-items: center;
   background: var(--bg-secondary); border: 1px solid var(--border);

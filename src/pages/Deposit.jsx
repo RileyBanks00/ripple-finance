@@ -24,13 +24,22 @@ const SUPPORTED_COINS = [
   { coin: 'BNB',  name: 'BNB',      icon: 'coins',    color: '#f0b90b', defaultNetwork: 'BNB Smart Chain (BEP-20)' },
 ];
 
+// Top-3 major currencies for the exchange calculator
+const CURRENCIES = [
+  { code: 'USD', symbol: '$', rate: 1 },
+  { code: 'EUR', symbol: '€', rate: 0.92 },
+  { code: 'GBP', symbol: '£', rate: 0.79 },
+];
+
 export default function Deposit() {
   const { data: dbAddresses, loading } = useDepositAddresses();
   const { data: addressRequests } = useAddressRequests();
-  const { prices } = useCryptoPrices();
+  const { prices, fiatRates } = useCryptoPrices();
   const [selectedCoin, setSelectedCoin] = useState(SUPPORTED_COINS[0]);
   const [copied, setCopied] = useState(false);
   const [amount, setAmount] = useState('');
+  const [cryptoInput, setCryptoInput] = useState('');
+  const [currency, setCurrency] = useState('USD');
   const [requesting, setRequesting] = useState(false);
   const [requestError, setRequestError] = useState('');
 
@@ -43,7 +52,23 @@ export default function Deposit() {
 
   const priceRow = prices.find(p => p.coin === selectedCoin.coin);
   const price = priceRow?.price ?? 0;
-  const cryptoEquiv = amount && price > 0 ? (parseFloat(amount) / price).toFixed(6) : '';
+  const activeCurrency =
+    { ...CURRENCIES.find(c => c.code === currency), rate: fiatRates?.[currency] ?? CURRENCIES.find(c => c.code === currency).rate };
+  const fmtFiat = (v) =>
+    Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: v < 1 ? 4 : 2 });
+
+  // fiat → crypto (typing fiat); the crypto input mirrors it and vice versa
+  const cryptoEquiv = amount && price > 0 && parseFloat(amount) > 0
+    ? (parseFloat(amount) / activeCurrency.rate / price).toFixed(6)
+    : '';
+  const quickAmounts = [100, 500, 1000, 5000];
+
+  // Keep the two inputs consistent: typing fiat updates crypto and vice versa
+  function handleCryptoInput(v) {
+    setCryptoInput(v);
+    const n = parseFloat(v);
+    setAmount(n > 0 && price > 0 ? String(+(n * price * activeCurrency.rate).toFixed(2)) : '');
+  }
 
   function handleCopy() {
     if (!userAddress) return;
@@ -138,7 +163,7 @@ export default function Deposit() {
                 </div>
                 <div className="deposit-warn">
                   <InformationCircleIcon className="warn-icon" />
-                  <span>Deposits require <strong>3 confirmations</strong> before they appear in your wallet.</span>
+                  <span>Deposits appear in your wallet after network processing — usually within minutes.</span>
                 </div>
               </div>
             </>
@@ -182,16 +207,32 @@ export default function Deposit() {
 
         {/* Right — Calculator + Info */}
         <div className="deposit-right">
-          {/* Calculator */}
+          {/* Calculator — fiat (USD/EUR/GBP) ⇄ selected crypto */}
           <div className="dash-card deposit-calc">
-            <h3 className="deposit-calc-title">Amount Calculator</h3>
+            <h3 className="deposit-calc-title">Exchange Calculator</h3>
+
             <div className="calc-field">
-              <label>USD Amount</label>
+              <div className="calc-field-head">
+                <label>You Send</label>
+                <div className="calc-currency-pills">
+                  {CURRENCIES.map(c => (
+                    <button
+                      key={c.code}
+                      className={`calc-pill ${currency === c.code ? 'active' : ''}`}
+                      onClick={() => { setCurrency(c.code); setAmount(''); }}
+                    >
+                      {c.code}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="calc-input-wrap">
-                <span className="calc-prefix">$</span>
+                <span className="calc-prefix">{activeCurrency.symbol}</span>
                 <input
                   type="number"
-                  placeholder="Enter USD amount"
+                  min="0"
+                  step="any"
+                  placeholder={`Enter ${currency} amount`}
                   value={amount}
                   onChange={e => setAmount(e.target.value)}
                   className="calc-input"
@@ -199,22 +240,48 @@ export default function Deposit() {
                 />
               </div>
             </div>
+
             {cryptoEquiv && (
               <div className="calc-result">
                 <span>≈</span>
                 <span className="calc-crypto" style={{ color: selectedCoin.color }}>
                   {cryptoEquiv} {selectedCoin.coin}
                 </span>
-                <span className="calc-rate">@ ${price.toLocaleString()}/{selectedCoin.coin}</span>
+                <span className="calc-rate">
+                  @ {activeCurrency.symbol}{fmtFiat(price / activeCurrency.rate)}/{selectedCoin.coin}
+                </span>
               </div>
             )}
+
+            {cryptoEquiv && (
+              <div className="calc-field calc-reverse">
+                <label>You Receive</label>
+                <div className="calc-input-wrap">
+                  <span className="calc-prefix" style={{ color: selectedCoin.color }}>
+                    <DataIcon name={selectedCoin.icon} className="data-icon-inline" />
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="0.00"
+                    value={cryptoInput}
+                    onChange={e => handleCryptoInput(e.target.value)}
+                    className="calc-input"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="calc-quick">
-              {[100, 500, 1000, 5000].map(v => (
-                <button key={v} className="quick-btn" onClick={() => setAmount(String(v))}>${v.toLocaleString()}</button>
+              {quickAmounts.map(v => (
+                <button key={v} className="quick-btn" onClick={() => { setCryptoInput(''); setAmount(String(v)); }}>
+                  {activeCurrency.symbol}{v.toLocaleString()}
+                </button>
               ))}
             </div>
             <div className="calc-source-note">
-              {priceRow?.source === 'live' ? 'Using live market rate' : 'Using cached rate — refreshes automatically'}
+              {priceRow?.source === 'live' ? 'Live market rates · USD · EUR · GBP' : 'Cached rates — refreshes automatically'}
             </div>
           </div>
 
