@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import QRCode from 'react-qr-code';
 import { useCryptoPrices } from '../hooks/useCryptoPrices';
 import { useDepositAddresses, useAddressRequests } from '../hooks/useSupabase';
 import { supabase } from '../lib/supabase';
@@ -128,10 +127,6 @@ export default function Deposit() {
             </div>
           ) : userAddress?.address ? (
             <>
-              <div className="deposit-qr-wrap">
-                <QRCode value={userAddress.address} size={180} />
-              </div>
-              
               <div className="deposit-address-box">
                 <div className="deposit-addr-label">Your Personal Deposit Address</div>
                 <div className="deposit-addr-row">

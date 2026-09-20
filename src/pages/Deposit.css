@@ -70,21 +70,7 @@
 .deposit-coin-name    { font-size: 20px; font-weight: 800; }
 .deposit-coin-network { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
-/* QR */
-.deposit-qr-wrap {
-  display: flex;              /* flex child centers via margin auto */
-  justify-content: center;
-  background: #fff;
-  padding: 16px;
-  border-radius: 16px;
-  width: fit-content;
-  margin: 24px auto;          /* actually centers (inline-flex + margin:auto doesn't) */
-  max-width: 100%;
-}
-@media (max-width: 360px) {
-  .deposit-qr-wrap { padding: 10px; }
-  .deposit-qr-wrap svg { width: 150px; height: 150px; }
-}
+/* QR removed — deposit address is copy-to-clipboard only */
 .qr-box {
   width: 200px; height: 200px; margin: 0 auto;
   background: #fff; border-radius: 16px;
