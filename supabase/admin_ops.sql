@@ -179,8 +179,13 @@ create table if not exists public.address_requests (
 
 alter table public.address_requests enable row level security;
 
+-- Postgres has no CREATE POLICY IF NOT EXISTS — drop first so the
+-- whole file can be re-run safely.
+drop policy if exists "requests: select own" on public.address_requests;
 create policy "requests: select own"
   on public.address_requests for select using (auth.uid() = user_id);
+
+drop policy if exists "requests: insert own" on public.address_requests;
 create policy "requests: insert own"
   on public.address_requests for insert with check (auth.uid() = user_id);
 -- users never update/delete their requests; admins do it via RPC/SQL.
