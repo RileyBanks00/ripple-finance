@@ -12,6 +12,8 @@ import {
   CheckIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
+// All listed coins accept deposits — admin assigns each user a
+// personal address per asset from the admin portal.
 import './Deposit.css';
 
 const SUPPORTED_COINS = [
@@ -42,8 +44,6 @@ export default function Deposit() {
   const priceRow = prices.find(p => p.coin === selectedCoin.coin);
   const price = priceRow?.price ?? 0;
   const cryptoEquiv = amount && price > 0 ? (parseFloat(amount) / price).toFixed(6) : '';
-
-  const isAvailable = selectedCoin.coin === 'BTC' || selectedCoin.coin === 'USDT';
 
   function handleCopy() {
     if (!userAddress) return;
@@ -119,12 +119,6 @@ export default function Deposit() {
 
           {loading ? (
             <div style={{ padding: '40px 0', textAlign: 'center', color: '#8892b0' }}>Loading deposit details...</div>
-          ) : !isAvailable ? (
-            <div className="deposit-no-address" style={{ borderColor: 'rgba(255,79,109,0.3)', background: 'rgba(255,79,109,0.02)' }}>
-              <ExclamationTriangleIcon className="deposit-no-addr-icon" style={{ color: 'var(--accent-danger)' }} />
-              <h3>Temporarily Unavailable</h3>
-              <p>Deposits via this platform for <strong>{selectedCoin.coin}</strong> are temporarily unavailable. Please select BTC or USDT instead.</p>
-            </div>
           ) : userAddress?.address ? (
             <>
               <div className="deposit-address-box">
