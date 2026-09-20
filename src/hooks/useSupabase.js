@@ -316,6 +316,7 @@ export function useAdminUserDetail(userId) {
   const [addressRequests, setAddressRequests] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -330,6 +331,8 @@ export function useAdminUserDetail(userId) {
         supabase.from('address_requests').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       ]);
 
+      const firstError = prof.error || wals.error || txs.error || addrs.error || reqs.error;
+      if (firstError) setError(firstError.message);
       if (prof.data) setUser({ ...prof.data, gas_fee: Number(prof.data.gas_fee ?? 3.80) });
       if (wals.data) setWallets(wals.data.map(w => ({ ...w, balance: Number(w.balance) })));
       if (txs.data) setTransactions(txs.data);
@@ -350,7 +353,7 @@ export function useAdminUserDetail(userId) {
     return () => supabase.removeChannel(channel);
   }, [userId, tick]);
 
-  return { user, wallets, transactions, addresses, addressRequests, loading, refetch: () => setTick((t) => t + 1) };
+  return { user, wallets, transactions, addresses, addressRequests, loading, error, refetch: () => setTick((t) => t + 1) };
 }
 
 // Fetch user's address requests (e.g. "Request USDT address" -> pending)

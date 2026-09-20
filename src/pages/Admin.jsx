@@ -19,6 +19,7 @@ import { coinMeta } from '../utils/icons';
 import './Admin.css';
 
 const PAGE_SIZE = 10;
+const SUPPORTED_ASSETS = ['BTC', 'ETH', 'USDT'];
 
 const TABS = [
   { key: 'balances',      label: 'Balances',      icon: WalletIcon },
@@ -155,7 +156,7 @@ export default function Admin() {
 
 function UserDrawer({ userId, onClose }) {
   const [tab, setTab] = useState('balances');
-  const { user, wallets, transactions, addresses, addressRequests, loading, refetch } =
+  const { user, wallets, transactions, addresses, addressRequests, loading, error, refetch } =
     useAdminUserDetail(userId);
 
   useEffect(() => {
@@ -197,7 +198,9 @@ function UserDrawer({ userId, onClose }) {
         </nav>
 
         <div className="drawer-body">
-          {loading || !user ? (
+          {error ? (
+            <p className="admin-msg bad">Could not load this user's data: {error}</p>
+          ) : loading || !user ? (
             <div className="admin-empty">Loading user...</div>
           ) : tab === 'balances' ? (
             <BalancesTab userId={userId} wallets={wallets} onChange={refetch} />
@@ -253,14 +256,17 @@ function BalancesTab({ userId, wallets, onChange }) {
     }
   }
 
-  if (wallets.length === 0) {
-    return <div className="admin-empty">This user has no wallet rows yet.</div>;
-  }
+  // Always show the three core assets (plus any others the user holds),
+  // so a brand-new user with no wallet rows can still be credited.
+  const extraAssets = wallets.filter((w) => !SUPPORTED_ASSETS.includes(w.asset)).map((w) => w.asset);
+  const rows = [...SUPPORTED_ASSETS, ...extraAssets].map(
+    (asset) => wallets.find((w) => w.asset === asset) || { asset, balance: 0 }
+  );
 
   return (
     <div className="drawer-section">
       {msg && <p className={`admin-msg ${msg.ok ? 'ok' : 'bad'}`}>{msg.text}</p>}
-      {wallets.map((w) => {
+      {rows.map((w) => {
         const meta = coinMeta(w.asset);
         const open = openAsset?.asset === w.asset;
         return (
