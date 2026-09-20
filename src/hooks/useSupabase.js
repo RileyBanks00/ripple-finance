@@ -360,7 +360,7 @@ export function useAdminUserDetail(userId) {
 export function useAddressRequests() {
   const { user } = useAuth();
   const [data, setData] = useState([]);
-  const [loading, setLoading] = true;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
