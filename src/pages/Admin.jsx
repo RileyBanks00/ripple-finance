@@ -240,8 +240,13 @@ function BalancesTab({ userId, wallets, onChange }) {
     }
     setBusy(true);
     setMsg(null);
-    const args = { p_user_id: userId, p_asset: openAsset.asset, p_amount: Number(amount) };
-    if (mode !== 'set' && note) args.p_note = note;
+    const args = { p_user_id: userId, p_asset: openAsset.asset };
+    if (mode === 'set') {
+      args.p_balance = Number(amount); // admin_set_wallet_balance expects p_balance
+    } else {
+      args.p_amount = Number(amount);
+      if (note) args.p_note = note;
+    }
 
     const { error } = await supabase.rpc(rpcByMode[mode], args);
     setBusy(false);
